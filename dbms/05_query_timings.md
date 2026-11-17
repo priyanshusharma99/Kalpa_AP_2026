@@ -1,6 +1,6 @@
 # Query Execution Timings & Plan Analysis
 
-PostgreSQL database benchmark results for the **Kalpa** collaborative design platform. Every query from `dbms/04_queries.sql` was executed with `EXPLAIN (ANALYZE, BUFFERS)` for 3 consecutive iterations. Write operations were wrapped within `BEGIN; ... ROLLBACK;` transaction blocks to maintain consistent database state across iterations. Full raw execution plans for each query are saved in [`dbms/plans/`](./plans/).
+PostgreSQL database benchmark results for the **Kalpa** collaborative design platform. Every query from `dbms/04_queries.sql` was executed with `EXPLAIN (ANALYZE, BUFFERS)` for 3 consecutive iterations. Write operations were wrapped within `BEGIN; ... ROLLBACK;` transaction blocks to maintain consistent database state across iterations.
 
 ## Summary Timings Table
 
