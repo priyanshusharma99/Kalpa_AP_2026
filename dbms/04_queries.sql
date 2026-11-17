@@ -193,3 +193,155 @@ FROM comment_replies cr
 LEFT JOIN users u ON cr.author_id = u.user_id
 WHERE cr.comment_id = 'comm_001'
 ORDER BY cr.created_at ASC;
+
+
+-- ============================================================
+-- R15: READ
+-- Project status header — count unresolved active comments
+-- Scenario: Top bar notification badge showing remaining unresolved
+-- review comments for a design project.
+-- ============================================================
+SELECT COUNT(*) AS open_comment_count
+FROM comment_pins
+WHERE project_id = 'proj_001' AND status = 'open';
+
+-- ============================================================
+-- R16: READ
+-- Dashboard search — filter accessible projects by title substring
+-- Scenario: Dashboard global search filter matching project titles
+-- accessible to the current user.
+-- ============================================================
+SELECT p.project_id, p.project_title, p.canvas_width, p.canvas_height,
+       u.user_name AS owner_name, pc.role_name
+FROM projects p
+JOIN project_collaborators pc ON p.project_id = pc.project_id
+JOIN users u ON p.owner_id = u.user_id
+WHERE pc.user_id = 'usr_001'
+  AND p.project_title ILIKE '%Project%'
+ORDER BY p.updated_at DESC;
+
+-- ============================================================
+-- R17: READ
+-- Project analytics — aggregate elements by shape type and dimension stats
+-- Scenario: Project statistics modal computing element distribution,
+-- average dimensions, and min/max z-index stacking bounds.
+-- ============================================================
+SELECT e.shape_type,
+       COUNT(*) AS total_elements,
+       ROUND(AVG(e.width), 2) AS avg_width,
+       ROUND(AVG(e.height), 2) AS avg_height,
+       MIN(e.z_index) AS min_z,
+       MAX(e.z_index) AS max_z
+FROM canvas_elements e
+WHERE e.project_id = 'proj_001'
+GROUP BY e.shape_type
+ORDER BY total_elements DESC;
+
+-- ============================================================
+-- R18: READ
+-- Audit trail — recent canvas modifications and editor details
+-- Scenario: Activity log side panel displaying the 20 most recent
+-- canvas shape additions and modifications with editor metadata.
+-- ============================================================
+SELECT e.element_id, e.shape_type, e.updated_at,
+       u.user_name AS modifier_name, u.avatar_url
+FROM canvas_elements e
+LEFT JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001'
+ORDER BY e.updated_at DESC
+LIMIT 20;
+
+-- ============================================================
+-- A01: ADVANCED READ
+-- Spatial Viewport Culling (2D Bounding Box Intersection)
+-- Scenario: Viewport rendering culling. Fetches only elements intersecting
+-- the active client camera window [view_min_x, view_min_y] to [view_max_x, view_max_y].
+-- ============================================================
+SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.z_index
+FROM canvas_elements e
+WHERE e.project_id = 'proj_001'
+  AND e.pos_x <= 1920.00                    -- viewport_max_x
+  AND (e.pos_x + e.width) >= 0.00           -- viewport_min_x
+  AND e.pos_y <= 1080.00                    -- viewport_max_y
+  AND (e.pos_y + e.height) >= 0.00          -- viewport_min_y
+ORDER BY e.z_index ASC;
+
+-- ============================================================
+-- A02: ADVANCED READ
+-- Contributor Leaderboard using Window Function (DENSE_RANK)
+-- Scenario: Sprint velocity leaderboard ranking collaborators by
+-- total shapes authored across the design project.
+-- ============================================================
+SELECT 
+    e.project_id,
+    p.project_title,
+    u.user_id,
+    u.user_name,
+    COUNT(e.element_id) AS elements_created,
+    DENSE_RANK() OVER (
+        PARTITION BY e.project_id 
+        ORDER BY COUNT(e.element_id) DESC
+    ) AS contribution_rank
+FROM canvas_elements e
+JOIN projects p ON e.project_id = p.project_id
+JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001'
+GROUP BY e.project_id, p.project_title, u.user_id, u.user_name
+ORDER BY contribution_rank ASC;
+
+-- ============================================================
+-- A03: ADVANCED READ
+-- Canvas Layering Gap Analysis using LAG() / LEAD()
+-- Scenario: Layer defragmentation check inspecting gaps between
+-- consecutive z-index layers on canvas.
+-- ============================================================
+WITH layer_sequence AS (
+    SELECT 
+        element_id,
+        shape_type,
+        z_index,
+        LAG(z_index) OVER (ORDER BY z_index ASC) AS prev_z,
+        LEAD(z_index) OVER (ORDER BY z_index ASC) AS next_z
+    FROM canvas_elements
+    WHERE project_id = 'proj_001'
+)
+SELECT 
+    element_id,
+    shape_type,
+    z_index,
+    prev_z,
+    next_z,
+    (z_index - prev_z) AS gap_with_previous
+FROM layer_sequence
+ORDER BY z_index ASC;
+
+-- ============================================================
+-- A04: ADVANCED READ
+-- Thread Discussion Hierarchy using JSON Aggregation
+-- Scenario: Single-roundtrip API payload returning comment pins with
+-- all discussion replies formatted as nested JSON objects.
+-- ============================================================
+SELECT 
+    cp.comment_id,
+    cp.pin_x,
+    cp.pin_y,
+    cp.status,
+    u.user_name AS creator_name,
+    COALESCE(
+        json_agg(
+            json_build_object(
+                'reply_id', cr.reply_id,
+                'author_name', ru.user_name,
+                'message_text', cr.message_text,
+                'created_at', cr.created_at
+            ) ORDER BY cr.created_at ASC
+        ) FILTER (WHERE cr.reply_id IS NOT NULL),
+        '[]'::json
+    ) AS replies_json
+FROM comment_pins cp
+JOIN users u ON cp.creator_id = u.user_id
+LEFT JOIN comment_replies cr ON cp.comment_id = cr.comment_id
+LEFT JOIN users ru ON cr.author_id = ru.user_id
+WHERE cp.project_id = 'proj_001'
+GROUP BY cp.comment_id, cp.pin_x, cp.pin_y, cp.status, u.user_name
+ORDER BY cp.created_at ASC;
