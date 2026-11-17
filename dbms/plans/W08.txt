@@ -1,0 +1,62 @@
+Query ID: W08
+Type: WRITE
+Description: Update comment pin status (resolve discussion pin)
+
+SQL:
+UPDATE comment_pins
+SET status = 'resolved'
+WHERE comment_id = 'comm_001' AND project_id = 'proj_001';
+
+--- RUN 1 ---
+BEGIN
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.017..0.017 rows=0.00 loops=1)
+   Buffers: shared hit=2
+   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.016..0.017 rows=0.00 loops=1)
+         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
+         Rows Removed by Filter: 100
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.374 ms
+ Execution Time: 0.088 ms
+(10 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.028..0.029 rows=0.00 loops=1)
+   Buffers: shared hit=2
+   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.026..0.026 rows=0.00 loops=1)
+         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
+         Rows Removed by Filter: 100
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.673 ms
+ Execution Time: 0.166 ms
+(10 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.011..0.011 rows=0.00 loops=1)
+   Buffers: shared hit=2
+   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.010..0.010 rows=0.00 loops=1)
+         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
+         Rows Removed by Filter: 100
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=80
+ Planning Time: 0.777 ms
+ Execution Time: 0.081 ms
+(10 rows)
+
+ROLLBACK

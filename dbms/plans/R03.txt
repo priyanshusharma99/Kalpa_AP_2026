@@ -1,0 +1,100 @@
+Query ID: R03
+Type: READ
+Description: User dashboard — owned projects with collaborator count
+
+SQL:
+SELECT p.project_id, p.project_title, p.canvas_width, p.canvas_height, p.canvas_bg_color,
+       p.created_at, p.updated_at,
+       COUNT(pc.user_id) AS total_collaborators
+FROM projects p
+LEFT JOIN project_collaborators pc ON p.project_id = pc.project_id
+WHERE p.owner_id = 'usr_001'
+GROUP BY p.project_id
+ORDER BY p.updated_at DESC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5.39..5.39 rows=2 width=65) (actual time=0.113..0.114 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=6
+   ->  HashAggregate  (cost=5.36..5.38 rows=2 width=65) (actual time=0.096..0.097 rows=2.00 loops=1)
+         Group Key: p.project_id
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=3
+         ->  Hash Right Join  (cost=1.34..5.30 rows=12 width=65) (actual time=0.042..0.081 rows=12.00 loops=1)
+               Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+               Buffers: shared hit=3
+               ->  Seq Scan on project_collaborators pc  (cost=0.00..3.50 rows=150 width=17) (actual time=0.010..0.029 rows=150.00 loops=1)
+                     Buffers: shared hit=2
+               ->  Hash  (cost=1.31..1.31 rows=2 width=57) (actual time=0.022..0.022 rows=2.00 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     Buffers: shared hit=1
+                     ->  Seq Scan on projects p  (cost=0.00..1.31 rows=2 width=57) (actual time=0.014..0.016 rows=2.00 loops=1)
+                           Filter: ((owner_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 23
+                           Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=257
+ Planning Time: 1.457 ms
+ Execution Time: 0.232 ms
+(24 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5.39..5.39 rows=2 width=65) (actual time=0.091..0.092 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=6
+   ->  HashAggregate  (cost=5.36..5.38 rows=2 width=65) (actual time=0.075..0.076 rows=2.00 loops=1)
+         Group Key: p.project_id
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=3
+         ->  Hash Right Join  (cost=1.34..5.30 rows=12 width=65) (actual time=0.035..0.063 rows=12.00 loops=1)
+               Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+               Buffers: shared hit=3
+               ->  Seq Scan on project_collaborators pc  (cost=0.00..3.50 rows=150 width=17) (actual time=0.008..0.019 rows=150.00 loops=1)
+                     Buffers: shared hit=2
+               ->  Hash  (cost=1.31..1.31 rows=2 width=57) (actual time=0.017..0.017 rows=2.00 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     Buffers: shared hit=1
+                     ->  Seq Scan on projects p  (cost=0.00..1.31 rows=2 width=57) (actual time=0.010..0.012 rows=2.00 loops=1)
+                           Filter: ((owner_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 23
+                           Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=257
+ Planning Time: 1.168 ms
+ Execution Time: 0.191 ms
+(24 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5.39..5.39 rows=2 width=65) (actual time=0.092..0.094 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=6
+   ->  HashAggregate  (cost=5.36..5.38 rows=2 width=65) (actual time=0.076..0.077 rows=2.00 loops=1)
+         Group Key: p.project_id
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=3
+         ->  Hash Right Join  (cost=1.34..5.30 rows=12 width=65) (actual time=0.038..0.065 rows=12.00 loops=1)
+               Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+               Buffers: shared hit=3
+               ->  Seq Scan on project_collaborators pc  (cost=0.00..3.50 rows=150 width=17) (actual time=0.009..0.019 rows=150.00 loops=1)
+                     Buffers: shared hit=2
+               ->  Hash  (cost=1.31..1.31 rows=2 width=57) (actual time=0.019..0.020 rows=2.00 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     Buffers: shared hit=1
+                     ->  Seq Scan on projects p  (cost=0.00..1.31 rows=2 width=57) (actual time=0.012..0.014 rows=2.00 loops=1)
+                           Filter: ((owner_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 23
+                           Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=257
+ Planning Time: 1.064 ms
+ Execution Time: 0.189 ms
+(24 rows)

@@ -1,0 +1,73 @@
+Query ID: R05
+Type: READ
+Description: Active canvas initialization — project settings & owner metadata
+
+SQL:
+SELECT p.project_id, p.project_title, p.canvas_width, p.canvas_height, p.canvas_bg_color,
+       p.owner_id, u.user_name AS owner_name, u.user_email AS owner_email, p.created_at, p.updated_at
+FROM projects p
+JOIN users u ON p.owner_id = u.user_id
+WHERE p.project_id = 'proj_001';
+
+--- RUN 1 ---
+QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Hash Join  (cost=1.32..2.97 rows=1 width=88) (actual time=0.028..0.035 rows=1.00 loops=1)
+   Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+   Buffers: shared hit=2
+   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=31) (actual time=0.006..0.008 rows=50.00 loops=1)
+         Buffers: shared hit=1
+   ->  Hash  (cost=1.31..1.31 rows=1 width=65) (actual time=0.013..0.014 rows=1.00 loops=1)
+         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+         Buffers: shared hit=1
+         ->  Seq Scan on projects p  (cost=0.00..1.31 rows=1 width=65) (actual time=0.006..0.007 rows=1.00 loops=1)
+               Filter: ((project_id)::text = 'proj_001'::text)
+               Rows Removed by Filter: 24
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=244
+ Planning Time: 0.954 ms
+ Execution Time: 0.097 ms
+(16 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Hash Join  (cost=1.32..2.97 rows=1 width=88) (actual time=0.019..0.025 rows=1.00 loops=1)
+   Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+   Buffers: shared hit=2
+   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=31) (actual time=0.004..0.006 rows=50.00 loops=1)
+         Buffers: shared hit=1
+   ->  Hash  (cost=1.31..1.31 rows=1 width=65) (actual time=0.010..0.010 rows=1.00 loops=1)
+         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+         Buffers: shared hit=1
+         ->  Seq Scan on projects p  (cost=0.00..1.31 rows=1 width=65) (actual time=0.004..0.006 rows=1.00 loops=1)
+               Filter: ((project_id)::text = 'proj_001'::text)
+               Rows Removed by Filter: 24
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=244
+ Planning Time: 0.889 ms
+ Execution Time: 0.082 ms
+(16 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                     
+--------------------------------------------------------------------------------------------------------------------
+ Hash Join  (cost=1.32..2.97 rows=1 width=88) (actual time=0.029..0.036 rows=1.00 loops=1)
+   Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+   Buffers: shared hit=2
+   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=31) (actual time=0.006..0.009 rows=50.00 loops=1)
+         Buffers: shared hit=1
+   ->  Hash  (cost=1.31..1.31 rows=1 width=65) (actual time=0.014..0.014 rows=1.00 loops=1)
+         Buckets: 1024  Batches: 1  Memory Usage: 9kB
+         Buffers: shared hit=1
+         ->  Seq Scan on projects p  (cost=0.00..1.31 rows=1 width=65) (actual time=0.006..0.008 rows=1.00 loops=1)
+               Filter: ((project_id)::text = 'proj_001'::text)
+               Rows Removed by Filter: 24
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=244
+ Planning Time: 1.039 ms
+ Execution Time: 0.104 ms
+(16 rows)

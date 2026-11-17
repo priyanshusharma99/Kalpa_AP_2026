@@ -1,0 +1,115 @@
+Query ID: R16
+Type: READ
+Description: Dashboard search — filter accessible projects by title substring
+
+SQL:
+SELECT p.project_id, p.project_title, p.canvas_width, p.canvas_height,
+       u.user_name AS owner_name, pc.role_name
+FROM projects p
+JOIN project_collaborators pc ON p.project_id = pc.project_id
+JOIN users u ON p.owner_id = u.user_id
+WHERE pc.user_id = 'usr_001'
+  AND p.project_title ILIKE '%Project%'
+ORDER BY p.updated_at DESC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=6.99..6.99 rows=1 width=54) (actual time=0.152..0.153 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=7
+   ->  Hash Join  (cost=5.28..6.98 rows=1 width=54) (actual time=0.107..0.116 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+         Buffers: shared hit=4
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (actual time=0.009..0.012 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=5.27..5.27 rows=1 width=55) (actual time=0.085..0.086 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=3
+               ->  Hash Join  (cost=1.39..5.27 rows=1 width=55) (actual time=0.059..0.081 rows=2.00 loops=1)
+                     Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+                     Buffers: shared hit=3
+                     ->  Seq Scan on project_collaborators pc  (cost=0.00..3.88 rows=2 width=15) (actual time=0.010..0.030 rows=2.00 loops=1)
+                           Filter: ((user_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 148
+                           Buffers: shared hit=2
+                     ->  Hash  (cost=1.31..1.31 rows=6 width=49) (actual time=0.039..0.039 rows=25.00 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                           Buffers: shared hit=1
+                           ->  Seq Scan on projects p  (cost=0.00..1.31 rows=6 width=49) (actual time=0.010..0.026 rows=25.00 loops=1)
+                                 Filter: ((project_title)::text ~~* '%Project%'::text)
+                                 Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=308
+ Planning Time: 1.780 ms
+ Execution Time: 0.250 ms
+(29 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=6.99..6.99 rows=1 width=54) (actual time=0.100..0.101 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=7
+   ->  Hash Join  (cost=5.28..6.98 rows=1 width=54) (actual time=0.070..0.078 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+         Buffers: shared hit=4
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (actual time=0.003..0.006 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=5.27..5.27 rows=1 width=55) (actual time=0.059..0.060 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=3
+               ->  Hash Join  (cost=1.39..5.27 rows=1 width=55) (actual time=0.040..0.054 rows=2.00 loops=1)
+                     Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+                     Buffers: shared hit=3
+                     ->  Seq Scan on project_collaborators pc  (cost=0.00..3.88 rows=2 width=15) (actual time=0.006..0.019 rows=2.00 loops=1)
+                           Filter: ((user_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 148
+                           Buffers: shared hit=2
+                     ->  Hash  (cost=1.31..1.31 rows=6 width=49) (actual time=0.027..0.028 rows=25.00 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                           Buffers: shared hit=1
+                           ->  Seq Scan on projects p  (cost=0.00..1.31 rows=6 width=49) (actual time=0.007..0.018 rows=25.00 loops=1)
+                                 Filter: ((project_title)::text ~~* '%Project%'::text)
+                                 Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=308
+ Planning Time: 1.246 ms
+ Execution Time: 0.174 ms
+(29 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=6.99..6.99 rows=1 width=54) (actual time=0.086..0.087 rows=2.00 loops=1)
+   Sort Key: p.updated_at DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=7
+   ->  Hash Join  (cost=5.28..6.98 rows=1 width=54) (actual time=0.063..0.070 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
+         Buffers: shared hit=4
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (actual time=0.003..0.005 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=5.27..5.27 rows=1 width=55) (actual time=0.053..0.054 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=3
+               ->  Hash Join  (cost=1.39..5.27 rows=1 width=55) (actual time=0.037..0.051 rows=2.00 loops=1)
+                     Hash Cond: ((pc.project_id)::text = (p.project_id)::text)
+                     Buffers: shared hit=3
+                     ->  Seq Scan on project_collaborators pc  (cost=0.00..3.88 rows=2 width=15) (actual time=0.005..0.018 rows=2.00 loops=1)
+                           Filter: ((user_id)::text = 'usr_001'::text)
+                           Rows Removed by Filter: 148
+                           Buffers: shared hit=2
+                     ->  Hash  (cost=1.31..1.31 rows=6 width=49) (actual time=0.027..0.027 rows=25.00 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                           Buffers: shared hit=1
+                           ->  Seq Scan on projects p  (cost=0.00..1.31 rows=6 width=49) (actual time=0.006..0.018 rows=25.00 loops=1)
+                                 Filter: ((project_title)::text ~~* '%Project%'::text)
+                                 Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=308
+ Planning Time: 1.174 ms
+ Execution Time: 0.154 ms
+(29 rows)

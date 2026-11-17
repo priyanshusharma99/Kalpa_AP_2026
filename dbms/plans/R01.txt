@@ -1,0 +1,47 @@
+Query ID: R01
+Type: READ
+Description: User authentication & profile lookup by email
+
+SQL:
+SELECT user_id, user_name, user_email, avatar_url, created_at
+FROM users
+WHERE user_email = 'user1@kalpa.app';
+
+--- RUN 1 ---
+QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.014..0.023 rows=1.00 loops=1)
+   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
+   Rows Removed by Filter: 49
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=89
+ Planning Time: 0.904 ms
+ Execution Time: 0.079 ms
+(8 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.011..0.017 rows=1.00 loops=1)
+   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
+   Rows Removed by Filter: 49
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=89
+ Planning Time: 0.749 ms
+ Execution Time: 0.072 ms
+(8 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.008..0.011 rows=1.00 loops=1)
+   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
+   Rows Removed by Filter: 49
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=89
+ Planning Time: 0.436 ms
+ Execution Time: 0.040 ms
+(8 rows)

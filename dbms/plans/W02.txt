@@ -1,0 +1,58 @@
+Query ID: W02
+Type: WRITE
+Description: Create new canvas project with owner synchronization
+
+SQL:
+INSERT INTO projects (project_id, project_title, canvas_width, canvas_height, canvas_bg_color, owner_id)
+VALUES ('proj_benchmark', 'Benchmark Mockup Canvas', 1920, 1080, '#1E1E1E', 'usr_001');
+
+--- RUN 1 ---
+BEGIN
+                                            QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Insert on projects  (cost=0.00..0.01 rows=0 width=0) (actual time=0.395..0.395 rows=0.00 loops=1)
+   Buffers: shared hit=67
+   ->  Result  (cost=0.00..0.01 rows=1 width=882) (actual time=0.006..0.006 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.082 ms
+ Trigger for constraint fk_projects_owner: time=0.653 calls=1
+ Trigger trg_projects_owner_sync: time=3.939 calls=1
+ Execution Time: 5.009 ms
+(9 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                            QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Insert on projects  (cost=0.00..0.01 rows=0 width=0) (actual time=0.535..0.536 rows=0.00 loops=1)
+   Buffers: shared hit=68
+   ->  Result  (cost=0.00..0.01 rows=1 width=882) (actual time=0.004..0.005 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.109 ms
+ Trigger for constraint fk_projects_owner: time=0.815 calls=1
+ Trigger trg_projects_owner_sync: time=3.858 calls=1
+ Execution Time: 5.244 ms
+(9 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                            QUERY PLAN                                             
+---------------------------------------------------------------------------------------------------
+ Insert on projects  (cost=0.00..0.01 rows=0 width=0) (actual time=0.429..0.429 rows=0.00 loops=1)
+   Buffers: shared hit=68
+   ->  Result  (cost=0.00..0.01 rows=1 width=882) (actual time=0.006..0.007 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.097 ms
+ Trigger for constraint fk_projects_owner: time=0.616 calls=1
+ Trigger trg_projects_owner_sync: time=3.192 calls=1
+ Execution Time: 4.265 ms
+(9 rows)
+
+ROLLBACK

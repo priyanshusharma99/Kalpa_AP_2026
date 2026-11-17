@@ -1,0 +1,65 @@
+Query ID: W04
+Type: WRITE
+Description: Persist newly drawn canvas element
+
+SQL:
+INSERT INTO canvas_elements (
+    element_id, project_id, shape_type, pos_x, pos_y, width, height,
+    scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
+    stroke_width, z_index, text_content, custom_properties, creator_id
+) VALUES (
+    'elem_benchmark', 'proj_001', 'rect', 250.00, 350.00, 180.00, 120.00,
+    1.00, 1.00, 0.00, 1.00, '#3B82F6', '#1D4ED8',
+    1.00, 25, NULL, '{"isLocked": false, "name": "BenchRect"}'::jsonb, 'usr_001'
+);
+
+--- RUN 1 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.426..0.427 rows=0.00 loops=1)
+   Buffers: shared hit=121
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.004..0.005 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.220 ms
+ Trigger for constraint fk_elements_project: time=0.533 calls=1
+ Trigger for constraint fk_elements_creator: time=0.268 calls=1
+ Execution Time: 1.257 ms
+(9 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.344..0.344 rows=0.00 loops=1)
+   Buffers: shared hit=121
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.003..0.004 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.069 ms
+ Trigger for constraint fk_elements_project: time=0.469 calls=1
+ Trigger for constraint fk_elements_creator: time=0.222 calls=1
+ Execution Time: 1.056 ms
+(9 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.164..0.164 rows=0.00 loops=1)
+   Buffers: shared hit=121
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.040 ms
+ Trigger for constraint fk_elements_project: time=0.224 calls=1
+ Trigger for constraint fk_elements_creator: time=0.094 calls=1
+ Execution Time: 0.494 ms
+(9 rows)
+
+ROLLBACK

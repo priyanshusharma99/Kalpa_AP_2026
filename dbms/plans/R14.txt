@@ -1,0 +1,86 @@
+Query ID: R14
+Type: READ
+Description: Comment thread history — fetch replies for thread chronologically
+
+SQL:
+SELECT cr.reply_id, cr.comment_id, cr.message_text, cr.created_at,
+       u.user_id AS author_id, u.user_name AS author_name, u.avatar_url AS author_avatar
+FROM comment_replies cr
+LEFT JOIN users u ON cr.author_id = u.user_id
+WHERE cr.comment_id = 'comm_001'
+ORDER BY cr.created_at ASC;
+
+--- RUN 1 ---
+QUERY PLAN                                                            
+----------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=8.93..8.94 rows=2 width=137) (actual time=0.078..0.079 rows=2.00 loops=1)
+   Sort Key: cr.created_at
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=8
+   ->  Hash Right Join  (cost=7.15..8.92 rows=2 width=137) (actual time=0.051..0.058 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (cr.author_id)::text)
+         Buffers: shared hit=5
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.005..0.007 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=7.12..7.12 rows=2 width=91) (actual time=0.036..0.036 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=4
+               ->  Seq Scan on comment_replies cr  (cost=0.00..7.12 rows=2 width=91) (actual time=0.018..0.030 rows=2.00 loops=1)
+                     Filter: ((comment_id)::text = 'comm_001'::text)
+                     Rows Removed by Filter: 248
+                     Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=247
+ Planning Time: 0.858 ms
+ Execution Time: 0.139 ms
+(20 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                            
+----------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=8.93..8.94 rows=2 width=137) (actual time=0.065..0.066 rows=2.00 loops=1)
+   Sort Key: cr.created_at
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=8
+   ->  Hash Right Join  (cost=7.15..8.92 rows=2 width=137) (actual time=0.042..0.049 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (cr.author_id)::text)
+         Buffers: shared hit=5
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.006 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=7.12..7.12 rows=2 width=91) (actual time=0.031..0.031 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=4
+               ->  Seq Scan on comment_replies cr  (cost=0.00..7.12 rows=2 width=91) (actual time=0.015..0.026 rows=2.00 loops=1)
+                     Filter: ((comment_id)::text = 'comm_001'::text)
+                     Rows Removed by Filter: 248
+                     Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=247
+ Planning Time: 0.913 ms
+ Execution Time: 0.113 ms
+(20 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                            
+----------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=8.93..8.94 rows=2 width=137) (actual time=0.089..0.090 rows=2.00 loops=1)
+   Sort Key: cr.created_at
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=8
+   ->  Hash Right Join  (cost=7.15..8.92 rows=2 width=137) (actual time=0.057..0.067 rows=2.00 loops=1)
+         Hash Cond: ((u.user_id)::text = (cr.author_id)::text)
+         Buffers: shared hit=5
+         ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.005..0.008 rows=50.00 loops=1)
+               Buffers: shared hit=1
+         ->  Hash  (cost=7.12..7.12 rows=2 width=91) (actual time=0.042..0.042 rows=2.00 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=4
+               ->  Seq Scan on comment_replies cr  (cost=0.00..7.12 rows=2 width=91) (actual time=0.020..0.035 rows=2.00 loops=1)
+                     Filter: ((comment_id)::text = 'comm_001'::text)
+                     Rows Removed by Filter: 248
+                     Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=247
+ Planning Time: 1.024 ms
+ Execution Time: 0.154 ms
+(20 rows)

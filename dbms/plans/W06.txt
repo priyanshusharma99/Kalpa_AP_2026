@@ -1,0 +1,64 @@
+Query ID: W06
+Type: WRITE
+Description: Delete canvas element by ID
+
+SQL:
+DELETE FROM canvas_elements
+WHERE element_id = 'elem_0050' AND project_id = 'proj_001';
+
+--- RUN 1 ---
+BEGIN
+                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Delete on canvas_elements  (cost=0.28..8.29 rows=0 width=0) (actual time=0.056..0.056 rows=0.00 loops=1)
+   Buffers: shared hit=4
+   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.29 rows=1 width=6) (actual time=0.029..0.030 rows=1.00 loops=1)
+         Index Cond: ((element_id)::text = 'elem_0050'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Index Searches: 1
+         Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=129
+ Planning Time: 1.085 ms
+ Execution Time: 0.295 ms
+(11 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Delete on canvas_elements  (cost=0.28..8.29 rows=0 width=0) (actual time=0.043..0.044 rows=0.00 loops=1)
+   Buffers: shared hit=4
+   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.29 rows=1 width=6) (actual time=0.027..0.028 rows=1.00 loops=1)
+         Index Cond: ((element_id)::text = 'elem_0050'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Index Searches: 1
+         Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=129
+ Planning Time: 0.579 ms
+ Execution Time: 0.150 ms
+(11 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Delete on canvas_elements  (cost=0.28..8.29 rows=0 width=0) (actual time=0.070..0.070 rows=0.00 loops=1)
+   Buffers: shared hit=4
+   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.29 rows=1 width=6) (actual time=0.043..0.044 rows=1.00 loops=1)
+         Index Cond: ((element_id)::text = 'elem_0050'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Index Searches: 1
+         Buffers: shared hit=3
+ Planning:
+   Buffers: shared hit=129
+ Planning Time: 0.752 ms
+ Execution Time: 0.197 ms
+(11 rows)
+
+ROLLBACK

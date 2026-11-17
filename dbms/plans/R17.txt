@@ -1,0 +1,90 @@
+Query ID: R17
+Type: READ
+Description: Project analytics — aggregate elements by shape type and dimension stats
+
+SQL:
+SELECT e.shape_type,
+       COUNT(*) AS total_elements,
+       ROUND(AVG(e.width), 2) AS avg_width,
+       ROUND(AVG(e.height), 2) AS avg_height,
+       MIN(e.z_index) AS min_z,
+       MAX(e.z_index) AS max_z
+FROM canvas_elements e
+WHERE e.project_id = 'proj_001'
+GROUP BY e.shape_type
+ORDER BY total_elements DESC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.150..0.151 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=25
+   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.125..0.130 rows=6.00 loops=1)
+         Group Key: shape_type
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=22
+         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.032..0.085 rows=32.00 loops=1)
+               Recheck Cond: ((project_id)::text = 'proj_001'::text)
+               Heap Blocks: exact=21
+               Buffers: shared hit=22
+               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.018..0.018 rows=33.00 loops=1)
+                     Index Cond: ((project_id)::text = 'proj_001'::text)
+                     Index Searches: 1
+                     Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=197
+ Planning Time: 0.899 ms
+ Execution Time: 0.225 ms
+(20 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.154..0.155 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=25
+   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.129..0.133 rows=6.00 loops=1)
+         Group Key: shape_type
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=22
+         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.025..0.087 rows=32.00 loops=1)
+               Recheck Cond: ((project_id)::text = 'proj_001'::text)
+               Heap Blocks: exact=21
+               Buffers: shared hit=22
+               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.015..0.015 rows=33.00 loops=1)
+                     Index Cond: ((project_id)::text = 'proj_001'::text)
+                     Index Searches: 1
+                     Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=197
+ Planning Time: 0.867 ms
+ Execution Time: 0.227 ms
+(20 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.117..0.118 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=25
+   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.097..0.101 rows=6.00 loops=1)
+         Group Key: shape_type
+         Batches: 1  Memory Usage: 32kB
+         Buffers: shared hit=22
+         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.021..0.067 rows=32.00 loops=1)
+               Recheck Cond: ((project_id)::text = 'proj_001'::text)
+               Heap Blocks: exact=21
+               Buffers: shared hit=22
+               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.012..0.012 rows=33.00 loops=1)
+                     Index Cond: ((project_id)::text = 'proj_001'::text)
+                     Index Searches: 1
+                     Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=197
+ Planning Time: 0.676 ms
+ Execution Time: 0.194 ms
+(20 rows)
