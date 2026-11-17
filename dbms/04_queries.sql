@@ -466,3 +466,19 @@ UPDATE projects
 SET owner_id = 'usr_002', updated_at = CURRENT_TIMESTAMP
 WHERE project_id = 'proj_001' AND owner_id = 'usr_001';
 COMMIT;
+
+
+-- ============================================================
+-- BENCHMARKING GUIDE (CP4 EXECUTION PLANS)
+-- ============================================================
+-- All queries above (R01..R18 and W01..W08) correspond directly
+-- to the execution plan analyses located in dbms/plans/ and summarized
+-- in dbms/05_query_timings.md.
+--
+-- Example execution plan capture:
+--   EXPLAIN (ANALYZE, BUFFERS, COSTS, VERBOSE)
+--   SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.z_index
+--   FROM canvas_elements e
+--   WHERE e.project_id = 'proj_001'
+--   ORDER BY e.z_index ASC;
+-- ============================================================
