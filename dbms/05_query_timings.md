@@ -2,7 +2,7 @@
 
 PostgreSQL database benchmark results for the **Kalpa** collaborative design platform. Every query from `dbms/04_queries.sql` was executed with `EXPLAIN (ANALYZE, BUFFERS)` for 3 consecutive iterations. Write operations were wrapped within `BEGIN; ... ROLLBACK;` transaction blocks to maintain consistent database state across iterations.
 
-## Summary Timings Table
+## Summary Timings Table (based on mock data).
 
 | Query | Type | What it does | Run 1 (ms) | Run 2 (ms) | Run 3 (ms) | Average (ms) | Scan / Execution Node |
 |:---|:---|:---|---:|---:|---:|---:|:---|
