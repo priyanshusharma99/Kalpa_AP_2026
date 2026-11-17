@@ -100,3 +100,96 @@ JOIN users u ON pc.user_id = u.user_id
 JOIN role_permissions rp ON pc.role_name = rp.role_name
 WHERE pc.project_id = 'proj_001'
 ORDER BY pc.role_name ASC, u.user_name ASC;
+
+
+-- ============================================================
+-- R08: READ
+-- Canvas load — fetch elements sorted by z-index for rendering
+-- Scenario: Real-time canvas hydration for Fabric.js / canvas renderer.
+-- Elements are fetched in ascending z-index layer order.
+-- ============================================================
+SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height,
+       e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color,
+       e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties,
+       e.creator_id, u.user_name AS creator_name
+FROM canvas_elements e
+LEFT JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001'
+ORDER BY e.z_index ASC;
+
+-- ============================================================
+-- R09: READ
+-- Element inspector — retrieve single canvas shape by ID
+-- Scenario: Invoked when a user selects a shape on the canvas
+-- to populate the right-hand property inspector panel.
+-- ============================================================
+SELECT e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height,
+       e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color,
+       e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties,
+       e.created_at, e.updated_at, u.user_name AS creator_name
+FROM canvas_elements e
+LEFT JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001' AND e.element_id = 'elem_0026';
+
+-- ============================================================
+-- R10: READ
+-- Layer management — fetch maximum z-index for new element stacking
+-- Scenario: Determines the top layer index when a user draws a new
+-- vector shape, ensuring it renders above all existing elements.
+-- ============================================================
+SELECT COALESCE(MAX(z_index), 0) AS max_z_index
+FROM canvas_elements
+WHERE project_id = 'proj_001';
+
+-- ============================================================
+-- R11: READ
+-- Filter canvas elements by shape type category
+-- Scenario: Canvas element filter in layers panel (e.g. geometric shapes).
+-- ============================================================
+SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height,
+       e.fill_color, e.stroke_color, e.z_index, u.user_name AS creator_name
+FROM canvas_elements e
+JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001' AND e.shape_type IN ('rect', 'circle', 'triangle')
+ORDER BY e.z_index ASC;
+
+-- ============================================================
+-- R12: READ
+-- Search custom attributes in JSONB (locked canvas shapes)
+-- Scenario: Queries PostgreSQL JSONB custom_properties column using
+-- containment operator (@>) to identify locked elements on canvas.
+-- ============================================================
+SELECT e.element_id, e.shape_type, e.custom_properties, u.user_name AS creator_name
+FROM canvas_elements e
+JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001'
+  AND e.custom_properties @> '{"isLocked": true}'::jsonb;
+
+-- ============================================================
+-- R13: READ
+-- Pinned comments overlay — fetch pins with reply counts
+-- Scenario: Renders comment pin badges across the 2D canvas coordinates
+-- along with creator profile details and total message replies.
+-- ============================================================
+SELECT cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at,
+       u.user_id AS creator_id, u.user_name AS creator_name, u.avatar_url AS creator_avatar,
+       COUNT(cr.reply_id) AS reply_count
+FROM comment_pins cp
+LEFT JOIN users u ON cp.creator_id = u.user_id
+LEFT JOIN comment_replies cr ON cp.comment_id = cr.comment_id
+WHERE cp.project_id = 'proj_001'
+GROUP BY cp.comment_id, u.user_id
+ORDER BY cp.created_at ASC;
+
+-- ============================================================
+-- R14: READ
+-- Comment thread history — fetch replies for thread chronologically
+-- Scenario: Invoked when user expands a comment pin to view discussion
+-- history and conversation replies.
+-- ============================================================
+SELECT cr.reply_id, cr.comment_id, cr.message_text, cr.created_at,
+       u.user_id AS author_id, u.user_name AS author_name, u.avatar_url AS author_avatar
+FROM comment_replies cr
+LEFT JOIN users u ON cr.author_id = u.user_id
+WHERE cr.comment_id = 'comm_001'
+ORDER BY cr.created_at ASC;
