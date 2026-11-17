@@ -1,0 +1,7 @@
+-- ============================================================
+-- Kalpa — Application SQL Queries (CP3 Root Alias)
+-- File: queries.sql (Points to dbms/04_queries.sql)
+-- Author: Priyanshu Sharma (Lead, Team T0013 - Kalpa)
+-- ============================================================
+
+\i dbms/04_queries.sql

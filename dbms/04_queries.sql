@@ -345,3 +345,124 @@ LEFT JOIN users ru ON cr.author_id = ru.user_id
 WHERE cp.project_id = 'proj_001'
 GROUP BY cp.comment_id, cp.pin_x, cp.pin_y, cp.status, u.user_name
 ORDER BY cp.created_at ASC;
+
+
+-- ============================================================
+-- W01: WRITE
+-- Register / create new user account
+-- Scenario: User onboarding flow via Google OAuth or credentials.
+-- ============================================================
+INSERT INTO users (user_id, user_name, user_email, avatar_url)
+VALUES ('usr_benchmark', 'Bench User', 'benchmark@kalpa.app', 'https://avatar.iran.liara.run/public/99')
+ON CONFLICT (user_email) DO NOTHING;
+
+-- ============================================================
+-- W02: WRITE
+-- Create new canvas project with owner synchronization
+-- Scenario: Invoked when a user clicks "New Project" in workspace.
+-- trg_projects_owner_sync automatically registers owner collaborator.
+-- ============================================================
+INSERT INTO projects (project_id, project_title, canvas_width, canvas_height, canvas_bg_color, owner_id)
+VALUES ('proj_benchmark', 'Benchmark Mockup Canvas', 1920, 1080, '#1E1E1E', 'usr_001');
+
+-- ============================================================
+-- W03: WRITE
+-- Add or update collaborator role on project
+-- Scenario: Invoked when a project owner invites or adjusts permissions
+-- for a collaborator in the Share modal.
+-- ============================================================
+INSERT INTO project_collaborators (project_id, user_id, role_name, joined_at)
+VALUES ('proj_001', 'usr_045', 'editor', CURRENT_TIMESTAMP)
+ON CONFLICT (project_id, user_id)
+DO UPDATE SET role_name = EXCLUDED.role_name;
+
+-- ============================================================
+-- W04: WRITE
+-- Persist newly drawn canvas element
+-- Scenario: Flush newly created shape from Liveblocks room state
+-- into PostgreSQL authoritative storage.
+-- ============================================================
+INSERT INTO canvas_elements (
+    element_id, project_id, shape_type, pos_x, pos_y, width, height,
+    scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
+    stroke_width, z_index, text_content, custom_properties, creator_id
+) VALUES (
+    'elem_benchmark', 'proj_001', 'rect', 250.00, 350.00, 180.00, 120.00,
+    1.00, 1.00, 0.00, 1.00, '#3B82F6', '#1D4ED8',
+    1.00, 25, NULL, '{"isLocked": false, "name": "BenchRect"}'::jsonb, 'usr_001'
+);
+
+-- ============================================================
+-- W05: WRITE
+-- Update element position, dimensions & style (drag flush)
+-- Scenario: Real-time debounce flush when user finishes dragging or
+-- resizing a shape on the collaborative canvas.
+-- ============================================================
+UPDATE canvas_elements
+SET pos_x = 310.50,
+    pos_y = 420.00,
+    width = 220.00,
+    height = 150.00,
+    fill_color = '#10B981',
+    z_index = 30,
+    updated_at = CURRENT_TIMESTAMP
+WHERE element_id = 'elem_0026' AND project_id = 'proj_001';
+
+-- ============================================================
+-- W06: WRITE
+-- Delete canvas element by ID
+-- Scenario: User deletes a selected element using the Delete key or context menu.
+-- ============================================================
+DELETE FROM canvas_elements
+WHERE element_id = 'elem_0050' AND project_id = 'proj_001';
+
+-- ============================================================
+-- W07: WRITE
+-- Create new pinned comment thread
+-- Scenario: User selects the Comment tool and places a pin on canvas coordinates.
+-- ============================================================
+INSERT INTO comment_pins (comment_id, project_id, pin_x, pin_y, status, creator_id)
+VALUES ('comm_benchmark', 'proj_001', 320.00, 150.00, 'open', 'usr_001');
+
+-- ============================================================
+-- W08: WRITE
+-- Update comment pin status (resolve discussion pin)
+-- Scenario: Reviewer marks a discussion thread as resolved.
+-- ============================================================
+UPDATE comment_pins
+SET status = 'resolved'
+WHERE comment_id = 'comm_001' AND project_id = 'proj_001';
+
+-- ============================================================
+-- W09: WRITE
+-- Real-time Liveblocks Debounce Upsert
+-- Scenario: Handles both creation and edits in a single idempotent statement.
+-- ============================================================
+INSERT INTO canvas_elements (
+    element_id, project_id, shape_type, pos_x, pos_y, width, height,
+    scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
+    stroke_width, z_index, custom_properties, creator_id
+) VALUES (
+    'elem_upsert_01', 'proj_001', 'rect', 400.00, 200.00, 150.00, 100.00,
+    1.00, 1.00, 0.00, 1.00, '#6366F1', '#4F46E5',
+    1.50, 15, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
+)
+ON CONFLICT (element_id) DO UPDATE SET
+    pos_x = EXCLUDED.pos_x,
+    pos_y = EXCLUDED.pos_y,
+    width = EXCLUDED.width,
+    height = EXCLUDED.height,
+    fill_color = EXCLUDED.fill_color,
+    updated_at = CURRENT_TIMESTAMP;
+
+-- ============================================================
+-- W10: WRITE
+-- Atomic Project Ownership Transfer Transaction
+-- Scenario: Reassigns project owner while trg_projects_owner_sync
+-- demotes prior owner to editor and promotes new owner.
+-- ============================================================
+BEGIN;
+UPDATE projects
+SET owner_id = 'usr_002', updated_at = CURRENT_TIMESTAMP
+WHERE project_id = 'proj_001' AND owner_id = 'usr_001';
+COMMIT;
