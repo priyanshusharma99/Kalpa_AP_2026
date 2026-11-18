@@ -1,0 +1,77 @@
+Query ID: W10
+Type: WRITE
+Description: Atomic Project Ownership Transfer Transaction
+
+SQL:
+UPDATE projects
+SET owner_id = 'usr_002', updated_at = CURRENT_TIMESTAMP
+WHERE project_id = 'proj_001' AND owner_id = 'usr_001';
+
+--- RUN 1 ---
+BEGIN
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Update on projects  (cost=0.14..8.16 rows=0 width=0) (actual time=0.669..0.669 rows=0.00 loops=1)
+   Buffers: shared hit=55
+   ->  Index Scan using idx_projects_owner on projects  (cost=0.14..8.16 rows=1 width=160) (actual time=0.008..0.009 rows=1.00 loops=1)
+         Index Cond: ((owner_id)::text = 'usr_001'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Rows Removed by Filter: 2
+         Index Searches: 1
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=85
+ Planning Time: 0.140 ms
+ Trigger for constraint fk_projects_owner: time=0.124 calls=1
+ Trigger trg_projects_owner_sync: time=0.452 calls=1
+ Trigger trg_projects_updated_at: time=0.069 calls=1
+ Execution Time: 1.280 ms
+(15 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Update on projects  (cost=0.14..8.16 rows=0 width=0) (actual time=0.590..0.591 rows=0.00 loops=1)
+   Buffers: shared hit=56
+   ->  Index Scan using idx_projects_owner on projects  (cost=0.14..8.16 rows=1 width=160) (actual time=0.009..0.010 rows=1.00 loops=1)
+         Index Cond: ((owner_id)::text = 'usr_001'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Rows Removed by Filter: 2
+         Index Searches: 1
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=85
+ Planning Time: 0.142 ms
+ Trigger for constraint fk_projects_owner: time=0.116 calls=1
+ Trigger trg_projects_owner_sync: time=0.401 calls=1
+ Trigger trg_projects_updated_at: time=0.055 calls=1
+ Execution Time: 1.143 ms
+(15 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Update on projects  (cost=0.14..8.16 rows=0 width=0) (actual time=0.857..0.857 rows=0.00 loops=1)
+   Buffers: shared hit=56
+   ->  Index Scan using idx_projects_owner on projects  (cost=0.14..8.16 rows=1 width=160) (actual time=0.009..0.010 rows=1.00 loops=1)
+         Index Cond: ((owner_id)::text = 'usr_001'::text)
+         Filter: ((project_id)::text = 'proj_001'::text)
+         Rows Removed by Filter: 2
+         Index Searches: 1
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=85
+ Planning Time: 0.155 ms
+ Trigger for constraint fk_projects_owner: time=0.169 calls=1
+ Trigger trg_projects_owner_sync: time=0.567 calls=1
+ Trigger trg_projects_updated_at: time=0.068 calls=1
+ Execution Time: 1.630 ms
+(15 rows)
+
+ROLLBACK

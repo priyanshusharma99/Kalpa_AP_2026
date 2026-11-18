@@ -1,0 +1,155 @@
+Query ID: A04
+Type: READ
+Description: Thread Discussion Hierarchy using JSON Aggregation
+
+SQL:
+SELECT 
+    cp.comment_id,
+    cp.pin_x,
+    cp.pin_y,
+    cp.status,
+    u.user_name AS creator_name,
+    COALESCE(
+        json_agg(
+            json_build_object(
+                'reply_id', cr.reply_id,
+                'author_name', ru.user_name,
+                'message_text', cr.message_text,
+                'created_at', cr.created_at
+            ) ORDER BY cr.created_at ASC
+        ) FILTER (WHERE cr.reply_id IS NOT NULL),
+        '[]'::json
+    ) AS replies_json
+FROM comment_pins cp
+JOIN users u ON cp.creator_id = u.user_id
+LEFT JOIN comment_replies cr ON cp.comment_id = cr.comment_id
+LEFT JOIN users ru ON cr.author_id = ru.user_id
+WHERE cp.project_id = 'proj_001'
+GROUP BY cp.comment_id, cp.pin_x, cp.pin_y, cp.status, u.user_name
+ORDER BY cp.created_at ASC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=25.21..25.21 rows=1 width=494) (actual time=0.080..0.080 rows=5.00 loops=1)
+   Sort Key: cp.created_at
+   Sort Method: quicksort  Memory: 26kB
+   Buffers: shared hit=44
+   ->  GroupAggregate  (cost=25.17..25.20 rows=1 width=494) (actual time=0.065..0.073 rows=5.00 loops=1)
+         Group Key: cp.comment_id, u.user_name
+         Buffers: shared hit=41
+         ->  Sort  (cost=25.17..25.18 rows=1 width=866) (actual time=0.043..0.043 rows=8.00 loops=1)
+               Sort Key: cp.comment_id, u.user_name
+               Sort Method: quicksort  Memory: 26kB
+               Buffers: shared hit=41
+               ->  Nested Loop Left Join  (cost=0.57..25.16 rows=1 width=866) (actual time=0.017..0.027 rows=8.00 loops=1)
+                     Buffers: shared hit=38
+                     ->  Nested Loop Left Join  (cost=0.43..24.69 rows=1 width=794) (actual time=0.015..0.020 rows=8.00 loops=1)
+                           Buffers: shared hit=22
+                           ->  Nested Loop  (cost=0.29..16.52 rows=1 width=462) (actual time=0.011..0.014 rows=5.00 loops=1)
+                                 Buffers: shared hit=12
+                                 ->  Index Scan using idx_comments_project on comment_pins cp  (cost=0.14..8.16 rows=1 width=390) (actual time=0.003..0.003 rows=5.00 loops=1)
+                                       Index Cond: ((project_id)::text = 'proj_001'::text)
+                                       Index Searches: 1
+                                       Buffers: shared hit=2
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.002..0.002 rows=1.00 loops=5)
+                                       Index Cond: ((user_id)::text = (cp.creator_id)::text)
+                                       Index Searches: 5
+                                       Buffers: shared hit=10
+                           ->  Index Scan using idx_replies_comment on comment_replies cr  (cost=0.14..8.16 rows=1 width=478) (actual time=0.001..0.001 rows=1.60 loops=5)
+                                 Index Cond: ((comment_id)::text = (cp.comment_id)::text)
+                                 Index Searches: 5
+                                 Buffers: shared hit=10
+                     ->  Index Scan using users_pkey on users ru  (cost=0.14..0.46 rows=1 width=364) (actual time=0.001..0.001 rows=1.00 loops=8)
+                           Index Cond: ((user_id)::text = (cr.author_id)::text)
+                           Index Searches: 8
+                           Buffers: shared hit=16
+ Planning:
+   Buffers: shared hit=278
+ Planning Time: 0.415 ms
+ Execution Time: 0.119 ms
+(37 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=25.21..25.21 rows=1 width=494) (actual time=0.152..0.153 rows=5.00 loops=1)
+   Sort Key: cp.created_at
+   Sort Method: quicksort  Memory: 26kB
+   Buffers: shared hit=44
+   ->  GroupAggregate  (cost=25.17..25.20 rows=1 width=494) (actual time=0.136..0.144 rows=5.00 loops=1)
+         Group Key: cp.comment_id, u.user_name
+         Buffers: shared hit=41
+         ->  Sort  (cost=25.17..25.18 rows=1 width=866) (actual time=0.109..0.110 rows=8.00 loops=1)
+               Sort Key: cp.comment_id, u.user_name
+               Sort Method: quicksort  Memory: 26kB
+               Buffers: shared hit=41
+               ->  Nested Loop Left Join  (cost=0.57..25.16 rows=1 width=866) (actual time=0.048..0.058 rows=8.00 loops=1)
+                     Buffers: shared hit=38
+                     ->  Nested Loop Left Join  (cost=0.43..24.69 rows=1 width=794) (actual time=0.044..0.050 rows=8.00 loops=1)
+                           Buffers: shared hit=22
+                           ->  Nested Loop  (cost=0.29..16.52 rows=1 width=462) (actual time=0.034..0.037 rows=5.00 loops=1)
+                                 Buffers: shared hit=12
+                                 ->  Index Scan using idx_comments_project on comment_pins cp  (cost=0.14..8.16 rows=1 width=390) (actual time=0.007..0.008 rows=5.00 loops=1)
+                                       Index Cond: ((project_id)::text = 'proj_001'::text)
+                                       Index Searches: 1
+                                       Buffers: shared hit=2
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.005..0.005 rows=1.00 loops=5)
+                                       Index Cond: ((user_id)::text = (cp.creator_id)::text)
+                                       Index Searches: 5
+                                       Buffers: shared hit=10
+                           ->  Index Scan using idx_replies_comment on comment_replies cr  (cost=0.14..8.16 rows=1 width=478) (actual time=0.002..0.002 rows=1.60 loops=5)
+                                 Index Cond: ((comment_id)::text = (cp.comment_id)::text)
+                                 Index Searches: 5
+                                 Buffers: shared hit=10
+                     ->  Index Scan using users_pkey on users ru  (cost=0.14..0.46 rows=1 width=364) (actual time=0.001..0.001 rows=1.00 loops=8)
+                           Index Cond: ((user_id)::text = (cr.author_id)::text)
+                           Index Searches: 8
+                           Buffers: shared hit=16
+ Planning:
+   Buffers: shared hit=278
+ Planning Time: 0.491 ms
+ Execution Time: 0.200 ms
+(37 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=25.21..25.21 rows=1 width=494) (actual time=0.073..0.073 rows=5.00 loops=1)
+   Sort Key: cp.created_at
+   Sort Method: quicksort  Memory: 26kB
+   Buffers: shared hit=44
+   ->  GroupAggregate  (cost=25.17..25.20 rows=1 width=494) (actual time=0.060..0.066 rows=5.00 loops=1)
+         Group Key: cp.comment_id, u.user_name
+         Buffers: shared hit=41
+         ->  Sort  (cost=25.17..25.18 rows=1 width=866) (actual time=0.039..0.039 rows=8.00 loops=1)
+               Sort Key: cp.comment_id, u.user_name
+               Sort Method: quicksort  Memory: 26kB
+               Buffers: shared hit=41
+               ->  Nested Loop Left Join  (cost=0.57..25.16 rows=1 width=866) (actual time=0.016..0.025 rows=8.00 loops=1)
+                     Buffers: shared hit=38
+                     ->  Nested Loop Left Join  (cost=0.43..24.69 rows=1 width=794) (actual time=0.014..0.019 rows=8.00 loops=1)
+                           Buffers: shared hit=22
+                           ->  Nested Loop  (cost=0.29..16.52 rows=1 width=462) (actual time=0.010..0.012 rows=5.00 loops=1)
+                                 Buffers: shared hit=12
+                                 ->  Index Scan using idx_comments_project on comment_pins cp  (cost=0.14..8.16 rows=1 width=390) (actual time=0.003..0.003 rows=5.00 loops=1)
+                                       Index Cond: ((project_id)::text = 'proj_001'::text)
+                                       Index Searches: 1
+                                       Buffers: shared hit=2
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.001..0.001 rows=1.00 loops=5)
+                                       Index Cond: ((user_id)::text = (cp.creator_id)::text)
+                                       Index Searches: 5
+                                       Buffers: shared hit=10
+                           ->  Index Scan using idx_replies_comment on comment_replies cr  (cost=0.14..8.16 rows=1 width=478) (actual time=0.001..0.001 rows=1.60 loops=5)
+                                 Index Cond: ((comment_id)::text = (cp.comment_id)::text)
+                                 Index Searches: 5
+                                 Buffers: shared hit=10
+                     ->  Index Scan using users_pkey on users ru  (cost=0.14..0.46 rows=1 width=364) (actual time=0.001..0.001 rows=1.00 loops=8)
+                           Index Cond: ((user_id)::text = (cr.author_id)::text)
+                           Index Searches: 8
+                           Buffers: shared hit=16
+ Planning:
+   Buffers: shared hit=278
+ Planning Time: 0.371 ms
+ Execution Time: 0.111 ms
+(37 rows)

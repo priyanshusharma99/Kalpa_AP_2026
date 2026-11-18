@@ -1,0 +1,81 @@
+Query ID: A03
+Type: READ
+Description: Canvas Layering Gap Analysis using LAG() / LEAD()
+
+SQL:
+WITH layer_sequence AS (
+    SELECT 
+        element_id,
+        shape_type,
+        z_index,
+        LAG(z_index) OVER (ORDER BY z_index ASC) AS prev_z,
+        LEAD(z_index) OVER (ORDER BY z_index ASC) AS next_z
+    FROM canvas_elements
+    WHERE project_id = 'proj_001'
+)
+SELECT 
+    element_id,
+    shape_type,
+    z_index,
+    prev_z,
+    next_z,
+    (z_index - prev_z) AS gap_with_previous
+FROM layer_sequence
+ORDER BY z_index ASC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.013..0.025 rows=35.00 loops=1)
+   Buffers: shared hit=2
+   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.012..0.023 rows=35.00 loops=1)
+         Window: w1 AS (ORDER BY canvas_elements.z_index)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=2
+         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.005..0.008 rows=35.00 loops=1)
+               Index Cond: ((project_id)::text = 'proj_001'::text)
+               Index Searches: 1
+               Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=178
+ Planning Time: 0.321 ms
+ Execution Time: 0.053 ms
+(14 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.026..0.041 rows=35.00 loops=1)
+   Buffers: shared hit=2
+   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.020..0.033 rows=35.00 loops=1)
+         Window: w1 AS (ORDER BY canvas_elements.z_index)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=2
+         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.008..0.013 rows=35.00 loops=1)
+               Index Cond: ((project_id)::text = 'proj_001'::text)
+               Index Searches: 1
+               Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=178
+ Planning Time: 0.338 ms
+ Execution Time: 0.086 ms
+(14 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.020..0.032 rows=35.00 loops=1)
+   Buffers: shared hit=2
+   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.019..0.029 rows=35.00 loops=1)
+         Window: w1 AS (ORDER BY canvas_elements.z_index)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=2
+         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.007..0.011 rows=35.00 loops=1)
+               Index Cond: ((project_id)::text = 'proj_001'::text)
+               Index Searches: 1
+               Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=178
+ Planning Time: 0.354 ms
+ Execution Time: 0.081 ms
+(14 rows)

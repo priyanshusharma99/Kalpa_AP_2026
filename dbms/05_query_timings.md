@@ -24,6 +24,10 @@ PostgreSQL database benchmark results for the **Kalpa** collaborative design pla
 | R16 | READ | Dashboard search — filter accessible projects by title substring | 0.250 | 0.174 | 0.154 | 0.193 | Hash Join |
 | R17 | READ | Project analytics — aggregate elements by shape type and dimension stats | 0.225 | 0.227 | 0.194 | 0.215 | Index Scan |
 | R18 | READ | Audit trail — recent canvas modifications and editor details | 0.231 | 0.194 | 0.199 | 0.208 | Index Scan |
+| A01 | READ | Spatial Viewport Culling (2D Bounding Box Intersection) | 0.041 | 0.031 | 0.074 | 0.049 | Index Scan |
+| A02 | READ | Contributor Leaderboard using Window Function (DENSE_RANK) | 0.120 | 0.121 | 0.228 | 0.156 | WindowAgg / Index Scan |
+| A03 | READ | Canvas Layering Gap Analysis using LAG() / LEAD() | 0.053 | 0.086 | 0.081 | 0.073 | WindowAgg / Index Scan |
+| A04 | READ | Thread Discussion Hierarchy using JSON Aggregation | 0.119 | 0.200 | 0.111 | 0.143 | GroupAggregate / Index Scan |
 | W01 | WRITE | Register / create new user account | 0.472 | 0.411 | 0.373 | 0.419 | Insert |
 | W02 | WRITE | Create new canvas project with owner synchronization | 5.009 | 5.244 | 4.265 | 4.839 | Insert |
 | W03 | WRITE | Add or update collaborator role on project | 2.051 | 2.891 | 2.489 | 2.477 | Insert |
@@ -32,6 +36,8 @@ PostgreSQL database benchmark results for the **Kalpa** collaborative design pla
 | W06 | WRITE | Delete canvas element by ID | 0.295 | 0.150 | 0.197 | 0.214 | Index Scan |
 | W07 | WRITE | Create new pinned comment thread | 0.982 | 0.993 | 0.646 | 0.874 | Insert |
 | W08 | WRITE | Update comment pin status (resolve discussion pin) | 0.088 | 0.166 | 0.081 | 0.112 | Seq Scan |
+| W09 | WRITE | Real-time Liveblocks Debounce Upsert | 0.555 | 0.443 | 0.441 | 0.480 | Insert (Upsert) |
+| W10 | WRITE | Atomic Project Ownership Transfer Transaction | 1.280 | 1.143 | 1.630 | 1.351 | Index Scan (Trigger Sync) |
 
 ---
 
@@ -49,11 +55,19 @@ PostgreSQL database benchmark results for the **Kalpa** collaborative design pla
 4. **Dashboard Aggregations & Joins (R03, R04, R07, R13, R16):**
    - Queries joining `projects`, `project_collaborators`, `users`, and `role_permissions` execute in **0.15 – 0.25 ms** using `Hash Join` and `Nested Loop` execution paths.
 
-5. **Write Operations & Constraints (W01 – W08):**
+5. **Advanced Analytical & Spatial Workloads (A01 – A04):**
+   - **Spatial Viewport Culling (`A01`):** Uses `idx_elements_z_index` to cull off-screen shapes with 2D axis-aligned bounding box checks in **0.049 ms**, eliminating unnecessary DOM/Canvas rendering overhead.
+   - **Leaderboard Window Aggregation (`A02`):** Computes per-contributor element creation ranks via `DENSE_RANK() OVER (PARTITION BY ...)` in **0.156 ms**, combining index scans and `WindowAgg`.
+   - **Layering Gap Analysis (`A03`):** Uses `LAG()` and `LEAD()` to inspect z-index defragmentation in **0.073 ms**, scanning the composite z-index index directly.
+   - **Thread Discussion Hierarchy (`A04`):** Aggregates comment pins and chronological reply trees into nested JSON payloads in a single roundtrip (**0.143 ms**) using `json_agg` and `json_build_object`.
+
+6. **Write Operations & Constraints (W01 – W10):**
    - Coordinate updates (`W05`), comment status updates (`W08`), and shape deletions (`W06`) execute rapidly in **0.10 – 0.25 ms**.
    - Creating a project (`W02`) and adding collaborators (`W03`) take ~**2.5 – 5.0 ms** due to foreign key validations and trigger execution (`sync_project_owner_collaborator`) which enforces single-owner invariants.
    - Inserting new canvas elements (`W04`) takes ~**0.9 ms**, validating coordinate, dimension, and opacity check constraints.
+   - Real-time Liveblocks debounce upsert (`W09`) handles concurrent insert/update conflict resolution idempotently via `ON CONFLICT (element_id) DO UPDATE` in **0.480 ms**.
+   - Atomic ownership transfer (`W10`) updates the project owner and automatically triggers demotion of the prior owner to editor within a single transaction in **1.351 ms**.
 
 ---
 
-*Raw plans for all 26 queries are located in [`dbms/plans/`](./plans/).*
+*Raw plans for all 32 queries are located in [`dbms/plans/`](./plans/).*

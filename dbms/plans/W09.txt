@@ -1,0 +1,84 @@
+Query ID: W09
+Type: WRITE
+Description: Real-time Liveblocks Debounce Upsert
+
+SQL:
+INSERT INTO canvas_elements (
+    element_id, project_id, shape_type, pos_x, pos_y, width, height,
+    scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
+    stroke_width, z_index, custom_properties, creator_id
+) VALUES (
+    'elem_upsert_01', 'proj_001', 'rect', 400.00, 200.00, 150.00, 100.00,
+    1.00, 1.00, 0.00, 1.00, '#6366F1', '#4F46E5',
+    1.50, 15, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
+)
+ON CONFLICT (element_id) DO UPDATE SET
+    pos_x = EXCLUDED.pos_x,
+    pos_y = EXCLUDED.pos_y,
+    width = EXCLUDED.width,
+    height = EXCLUDED.height,
+    fill_color = EXCLUDED.fill_color,
+    updated_at = CURRENT_TIMESTAMP;
+
+--- RUN 1 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.128..0.128 rows=0.00 loops=1)
+   Conflict Resolution: UPDATE
+   Conflict Arbiter Indexes: canvas_elements_pkey
+   Tuples Inserted: 1
+   Conflicting Tuples: 0
+   Buffers: shared hit=41
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=92
+ Planning Time: 0.091 ms
+ Trigger for constraint fk_elements_project: time=0.294 calls=1
+ Trigger for constraint fk_elements_creator: time=0.092 calls=1
+ Execution Time: 0.555 ms
+(13 rows)
+
+ROLLBACK
+
+--- RUN 2 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.118..0.118 rows=0.00 loops=1)
+   Conflict Resolution: UPDATE
+   Conflict Arbiter Indexes: canvas_elements_pkey
+   Tuples Inserted: 1
+   Conflicting Tuples: 0
+   Buffers: shared hit=41
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=92
+ Planning Time: 0.106 ms
+ Trigger for constraint fk_elements_project: time=0.206 calls=1
+ Trigger for constraint fk_elements_creator: time=0.081 calls=1
+ Execution Time: 0.443 ms
+(13 rows)
+
+ROLLBACK
+
+--- RUN 3 ---
+BEGIN
+                                                QUERY PLAN                                                
+----------------------------------------------------------------------------------------------------------
+ Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.103..0.103 rows=0.00 loops=1)
+   Conflict Resolution: UPDATE
+   Conflict Arbiter Indexes: canvas_elements_pkey
+   Tuples Inserted: 1
+   Conflicting Tuples: 0
+   Buffers: shared hit=41
+   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
+ Planning:
+   Buffers: shared hit=92
+ Planning Time: 0.077 ms
+ Trigger for constraint fk_elements_project: time=0.228 calls=1
+ Trigger for constraint fk_elements_creator: time=0.081 calls=1
+ Execution Time: 0.441 ms
+(13 rows)
+
+ROLLBACK

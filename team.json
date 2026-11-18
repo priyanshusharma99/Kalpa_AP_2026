@@ -1,0 +1,27 @@
+{
+  "team_number": "T0013",
+  "group_lead": {
+    "name": "Priyanshu Sharma",
+    "enrollment_no": "2501010358",
+    "github": "priyanshusharma99"
+  },
+  "members": [
+    {
+      "name": "Anurag Sonawane",
+      "enrollment_no": "2501010561",
+      "github": "Anurag-Sonawane"
+    },
+    {
+      "name": "Manjeet Lodha",
+      "enrollment_no": "2501010259",
+      "github": "Manjeet-cse"
+    },
+    {
+      "name": "Srijal Srivastava",
+      "enrollment_no": "2501010457",
+      "github": "Srijal-SS"
+    }
+  ],
+  "postgres_version": "18.6",
+  "laptop_used_for_benchmarks": "MacBook Pro M4"
+}

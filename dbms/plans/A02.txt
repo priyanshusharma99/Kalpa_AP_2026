@@ -1,0 +1,153 @@
+Query ID: A02
+Type: READ
+Description: Contributor Leaderboard using Window Function (DENSE_RANK)
+
+SQL:
+SELECT 
+    e.project_id,
+    p.project_title,
+    u.user_id,
+    u.user_name,
+    COUNT(e.element_id) AS elements_created,
+    DENSE_RANK() OVER (
+        PARTITION BY e.project_id 
+        ORDER BY COUNT(e.element_id) DESC
+    ) AS contribution_rank
+FROM canvas_elements e
+JOIN projects p ON e.project_id = p.project_id
+JOIN users u ON e.creator_id = u.user_id
+WHERE e.project_id = 'proj_001'
+GROUP BY e.project_id, p.project_title, u.user_id, u.user_name
+ORDER BY contribution_rank ASC;
+
+--- RUN 1 ---
+QUERY PLAN                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=24.76..24.77 rows=1 width=1042) (actual time=0.081..0.082 rows=4.00 loops=1)
+   Sort Key: (dense_rank() OVER w1)
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=149
+   ->  WindowAgg  (cost=24.73..24.75 rows=1 width=1042) (actual time=0.074..0.076 rows=4.00 loops=1)
+         Window: w1 AS (ORDER BY (count(e.element_id)) ROWS UNBOUNDED PRECEDING)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=146
+         ->  Sort  (cost=24.73..24.74 rows=1 width=1034) (actual time=0.071..0.072 rows=4.00 loops=1)
+               Sort Key: (count(e.element_id)) DESC
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=146
+               ->  GroupAggregate  (cost=24.70..24.72 rows=1 width=1034) (actual time=0.068..0.070 rows=4.00 loops=1)
+                     Group Key: p.project_title, u.user_id
+                     Buffers: shared hit=146
+                     ->  Sort  (cost=24.70..24.70 rows=1 width=1172) (actual time=0.065..0.066 rows=35.00 loops=1)
+                           Sort Key: p.project_title, u.user_id
+                           Sort Method: quicksort  Memory: 28kB
+                           Buffers: shared hit=146
+                           ->  Nested Loop  (cost=0.43..24.69 rows=1 width=1172) (actual time=0.016..0.045 rows=35.00 loops=1)
+                                 Buffers: shared hit=143
+                                 ->  Nested Loop  (cost=0.29..16.33 rows=1 width=954) (actual time=0.011..0.027 rows=35.00 loops=1)
+                                       Buffers: shared hit=73
+                                       ->  Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.16 rows=1 width=438) (actual time=0.003..0.005 rows=35.00 loops=1)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 1
+                                             Buffers: shared hit=2
+                                       ->  Index Scan using projects_pkey on projects p  (cost=0.14..8.16 rows=1 width=662) (actual time=0.000..0.000 rows=1.00 loops=35)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 35
+                                             Buffers: shared hit=71
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.000..0.000 rows=1.00 loops=35)
+                                       Index Cond: ((user_id)::text = (e.creator_id)::text)
+                                       Index Searches: 35
+                                       Buffers: shared hit=70
+ Planning:
+   Buffers: shared hit=374
+ Planning Time: 0.431 ms
+ Execution Time: 0.120 ms
+(39 rows)
+
+--- RUN 2 ---
+QUERY PLAN                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=24.76..24.77 rows=1 width=1042) (actual time=0.081..0.082 rows=4.00 loops=1)
+   Sort Key: (dense_rank() OVER w1)
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=148
+   ->  WindowAgg  (cost=24.73..24.75 rows=1 width=1042) (actual time=0.074..0.076 rows=4.00 loops=1)
+         Window: w1 AS (ORDER BY (count(e.element_id)) ROWS UNBOUNDED PRECEDING)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=145
+         ->  Sort  (cost=24.73..24.74 rows=1 width=1034) (actual time=0.071..0.072 rows=4.00 loops=1)
+               Sort Key: (count(e.element_id)) DESC
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=145
+               ->  GroupAggregate  (cost=24.70..24.72 rows=1 width=1034) (actual time=0.067..0.069 rows=4.00 loops=1)
+                     Group Key: p.project_title, u.user_id
+                     Buffers: shared hit=145
+                     ->  Sort  (cost=24.70..24.70 rows=1 width=1172) (actual time=0.063..0.064 rows=35.00 loops=1)
+                           Sort Key: p.project_title, u.user_id
+                           Sort Method: quicksort  Memory: 28kB
+                           Buffers: shared hit=145
+                           ->  Nested Loop  (cost=0.43..24.69 rows=1 width=1172) (actual time=0.014..0.044 rows=35.00 loops=1)
+                                 Buffers: shared hit=142
+                                 ->  Nested Loop  (cost=0.29..16.33 rows=1 width=954) (actual time=0.010..0.025 rows=35.00 loops=1)
+                                       Buffers: shared hit=72
+                                       ->  Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.16 rows=1 width=438) (actual time=0.003..0.005 rows=35.00 loops=1)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 1
+                                             Buffers: shared hit=2
+                                       ->  Index Scan using projects_pkey on projects p  (cost=0.14..8.16 rows=1 width=662) (actual time=0.000..0.000 rows=1.00 loops=35)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 35
+                                             Buffers: shared hit=70
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.000..0.000 rows=1.00 loops=35)
+                                       Index Cond: ((user_id)::text = (e.creator_id)::text)
+                                       Index Searches: 35
+                                       Buffers: shared hit=70
+ Planning:
+   Buffers: shared hit=374
+ Planning Time: 0.441 ms
+ Execution Time: 0.121 ms
+(39 rows)
+
+--- RUN 3 ---
+QUERY PLAN                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=24.76..24.77 rows=1 width=1042) (actual time=0.185..0.186 rows=4.00 loops=1)
+   Sort Key: (dense_rank() OVER w1)
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=148
+   ->  WindowAgg  (cost=24.73..24.75 rows=1 width=1042) (actual time=0.177..0.179 rows=4.00 loops=1)
+         Window: w1 AS (ORDER BY (count(e.element_id)) ROWS UNBOUNDED PRECEDING)
+         Storage: Memory  Maximum Storage: 17kB
+         Buffers: shared hit=145
+         ->  Sort  (cost=24.73..24.74 rows=1 width=1034) (actual time=0.174..0.174 rows=4.00 loops=1)
+               Sort Key: (count(e.element_id)) DESC
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=145
+               ->  GroupAggregate  (cost=24.70..24.72 rows=1 width=1034) (actual time=0.169..0.172 rows=4.00 loops=1)
+                     Group Key: p.project_title, u.user_id
+                     Buffers: shared hit=145
+                     ->  Sort  (cost=24.70..24.70 rows=1 width=1172) (actual time=0.166..0.167 rows=35.00 loops=1)
+                           Sort Key: p.project_title, u.user_id
+                           Sort Method: quicksort  Memory: 28kB
+                           Buffers: shared hit=145
+                           ->  Nested Loop  (cost=0.43..24.69 rows=1 width=1172) (actual time=0.072..0.108 rows=35.00 loops=1)
+                                 Buffers: shared hit=142
+                                 ->  Nested Loop  (cost=0.29..16.33 rows=1 width=954) (actual time=0.067..0.087 rows=35.00 loops=1)
+                                       Buffers: shared hit=72
+                                       ->  Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.16 rows=1 width=438) (actual time=0.032..0.038 rows=35.00 loops=1)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 1
+                                             Buffers: shared hit=2
+                                       ->  Index Scan using projects_pkey on projects p  (cost=0.14..8.16 rows=1 width=662) (actual time=0.001..0.001 rows=1.00 loops=35)
+                                             Index Cond: ((project_id)::text = 'proj_001'::text)
+                                             Index Searches: 35
+                                             Buffers: shared hit=70
+                                 ->  Index Scan using users_pkey on users u  (cost=0.14..8.16 rows=1 width=364) (actual time=0.000..0.000 rows=1.00 loops=35)
+                                       Index Cond: ((user_id)::text = (e.creator_id)::text)
+                                       Index Searches: 35
+                                       Buffers: shared hit=70
+ Planning:
+   Buffers: shared hit=374
+ Planning Time: 0.458 ms
+ Execution Time: 0.228 ms
+(39 rows)
