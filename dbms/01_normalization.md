@@ -17,7 +17,7 @@ In collaborative canvas tools, real-time collaboration and persistent storage se
 | Aspect | PostgreSQL (Authoritative System of Record) | Liveblocks (Real-Time Ephemeral Sync) |
 | :--- | :--- | :--- |
 | **Role** | **Authoritative Persistent Database** | **Real-Time Collaboration Engine** |
-| **Data Managed** | Users, Projects, Permissions, Persisted Shapes, Comment Pins, Replies, Audit History. | Live user cursors, active cursor chat messages, live floating emoji reactions, active dragging states. |
+| **Data Managed** | Users, Projects, Permissions, Persisted Shapes, Comment Pins, Replies, and Current Element Timestamps. | Live user cursors, active cursor chat messages, live floating emoji reactions, active dragging states. |
 | **Storage Nature** | Durable ACID disk storage with foreign key constraints. | In-memory WebSocket CRDT room state with periodic room storage snapshots. |
 | **Conflict Handling** | ACID transactions, foreign keys, and unique constraints. | Last-Write-Wins (LWW) / CRDT resolution in active sessions, flushed to PostgreSQL upon save / debounce. |
 
@@ -103,28 +103,33 @@ Repeating groups (`collaborators`, `elements`, `comments`, `replies`) are extrac
 ### 2NF Criteria:
 1. The relation must be in **1NF**.
 2. **No Partial Functional Dependencies:** Every non-prime attribute must be fully functionally dependent on the entire candidate key.
-   > **Theoretical Rule:** Partial dependency can *only* occur when a candidate key is **composite** (consisting of two or more attributes). A non-prime attribute cannot depend on a proper subset of a composite candidate key. If a candidate key is a single attribute, the relation is automatically in 2NF.
+   > **Theoretical Rule:** Check **every candidate key**. A partial dependency exists when a non-prime attribute depends on a proper subset of a candidate key. If all candidate keys are single attributes, no such partial dependency exists. A single-column primary key alone does not rule out composite alternate candidate keys.
 
 ### Analysis of 1NF Relations for 2NF:
 
 1. **`PROJECT_COLLABORATOR_1NF` (Has Composite Key: `{project_id, user_id}`):**
-   - Candidate Key: `{project_id, user_id}`
+   - Candidate Keys: `{project_id, user_id}` and `{project_id, user_email}`, since user emails uniquely identify users.
    - Functional Dependencies:
      - `{project_id, user_id} -> role_name, access_level_desc, joined_at` *(Full Dependency on entire key)*
-     - `user_id -> user_name, user_email` *(Partial Dependency on proper subset `user_id`)*
-   - **Violation:** `user_name` and `user_email` depend only on `user_id`, violating 2NF.
+     - `user_id -> user_name, user_email` and `user_email -> user_id, user_name`
+     - `user_name` is non-prime and depends on a proper subset of either composite candidate key.
+   - **Violation:** The non-prime `user_name` depends on `user_id` (and on `user_email`) alone, violating 2NF. `user_email` is prime because it occurs in an alternate candidate key; its dependency on `user_id` is not itself the non-prime-attribute violation.
    - **Resolution:** Decompose and extract user identity attributes into a dedicated `USER` relation:
      - `USER(user_id [PK], user_name, user_email)`
      - `PROJECT_COLLABORATOR(project_id [PK, FK], user_id [PK, FK], role_name, access_level_desc, joined_at)`
 
 2. **`CANVAS_ELEMENT_1NF`, `COMMENT_PIN_1NF`, `COMMENT_REPLY_1NF`:**
    - Candidate Keys: `{element_id}`, `{comment_id}`, `{reply_id}` respectively (each is a single-attribute `VARCHAR(64)`).
-   - Because their primary keys consist of a single column, they have no proper subsets. Therefore, they **trivially satisfy 2NF** (no partial dependencies exist).
+   - Under the stated domain FDs, no alternate composite candidate keys are asserted for these relations. Their single-attribute candidate keys have no nonempty proper subsets, so these relations satisfy 2NF.
    - *Note on `creator_id -> creator_name`:* In these tables, `creator_id` is a non-prime attribute determining another non-prime attribute (`creator_name`). Because `creator_id` is not part of a composite key, this is a **Transitive Dependency** ($element\_id \to creator\_id \to creator\_name$), which is formally resolved in **3NF**, not 2NF.
+
+3. **`PROJECT_1NF`:**
+   - `project_id` is the only candidate key asserted here. `owner_id -> owner_name, owner_email` is a transitive dependency, so owner details **remain in 2NF** and are extracted in the 3NF step.
+   - The owner may not appear in an arbitrary flattened collaborator list. User extraction must include all identities (owners, collaborators, element creators and reply authors), rather than relying only on collaborator rows.
 
 ### Resulting 2NF Relations:
 1. `USER_2NF(user_id [PK], user_name, user_email)`
-2. `PROJECT_2NF(project_id [PK], project_title, canvas_width, canvas_height, canvas_bg_color, owner_id [FK], created_at, updated_at)`
+2. `PROJECT_2NF(project_id [PK], project_title, canvas_width, canvas_height, canvas_bg_color, owner_id, owner_name, owner_email, created_at, updated_at)`
 3. `PROJECT_COLLABORATOR_2NF(project_id [PK, FK], user_id [PK, FK], role_name, access_level_desc, joined_at)`
 4. `CANVAS_ELEMENT_2NF(element_id [PK], project_id [FK], shape_type, pos_x, pos_y, width, height, scale_x, scale_y, rotation, opacity, fill_color, stroke_color, stroke_width, z_index, text_content, image_url, custom_properties, creator_id [FK], creator_name, created_at, updated_at)`
 5. `COMMENT_PIN_2NF(comment_id [PK], project_id [FK], pin_x, pin_y, status, creator_id [FK], creator_name, created_at)`
@@ -155,6 +160,13 @@ Repeating groups (`collaborators`, `elements`, `comments`, `replies`) are extrac
      - `role_name -> access_level_desc, can_edit, can_comment, can_share`
    - Non-prime attribute `access_level_desc` depends on `role_name`, which is a non-prime attribute (Transitive Dependency: $PK \to role\_name \to access\_level\_desc$).
    - **Resolution:** Extract role permissions into an independent lookup relation `ROLE_PERMISSIONS(role_name [PK], access_level_desc, can_edit, can_comment, can_share)`.
+
+3. **In `PROJECT_2NF`:**
+   - `project_id -> owner_id -> owner_name, owner_email` is a transitive dependency.
+   - Move owner identity attributes into the shared `USER` relation, matching `owner_id` to `USER.user_id`; retain `owner_id` as a foreign key in `PROJECTS`.
+   - Owner, collaborator, creator and author identities use the same user domain. For any user ID, all occurrences must agree on name/email. `USER` includes identities from all those sources, including users with no current project membership.
+   - Final project relation: `PROJECTS(project_id [PK], project_title, canvas_width, canvas_height, canvas_bg_color, owner_id [FK], created_at, updated_at)`.
+   - Timestamps, avatar URLs and permission flags are additional domain attributes included in the final DDL; they depend on the entity/role key and do not change the decompositions above.
 
 ### Owner-Collaborator Invariant Enforcement:
 - `PROJECTS.owner_id` explicitly references `USERS(user_id)`.
@@ -218,7 +230,31 @@ Repeating groups (`collaborators`, `elements`, `comments`, `replies`) are extrac
   - `reply_id` is `VARCHAR(64)` PK / Super Key.
 - **Status:** **Satisfies BCNF** $\checkmark$
 
-All relations satisfy the criteria of **BCNF** with lossless decomposition and dependency preservation.
+Under the listed domain FDs, the final relations satisfy **BCNF**. This statement concerns intra-relation functional dependencies; foreign keys, the conditional single-owner rule and cross-table ownership matching are separate integrity constraints.
+
+### Short Lossless-Join and Dependency-Preservation Proof
+
+For a binary decomposition `R -> R1, R2`, the join is lossless when the common attributes functionally determine all attributes of either component. Each identity/role extraction above meets that test:
+
+| Decomposition | Common determinant | Dependency proving losslessness |
+|:---|:---|:---|
+| Collaborator identity -> USER + membership | `user_id` | `user_id -> user_name, user_email` |
+| Project owner identity -> USER + project | `owner_id` (renamed `user_id` in USER) | `owner_id -> owner_name, owner_email` |
+| Element/comment creator identity -> USER + element/pin | `creator_id` (renamed `user_id`) | `creator_id -> creator_name` |
+| Reply author identity -> USER + reply | `author_id` (renamed `user_id`) | `author_id -> author_name` |
+| Membership role description -> ROLE_PERMISSIONS + membership | `role_name` | `role_name -> access_level_desc, can_edit, can_comment, can_share` |
+
+Each determinant and its dependent attributes are kept together in a final relation. For example, membership retains `{project_id,user_id} -> role_name,joined_at`; ROLE_PERMISSIONS retains `role_name -> permission attributes`. Their union implies the original transitive dependency from the membership key to permissions. The analogous argument applies to owner/creator/author identity. Thus the **listed FDs** are dependency-preserving.
+
+The proof applies to the flattened 1NF relations with consistent, known identity values. The UNF nested collections are first separated using their parent IDs; they are reconstructed as collections grouped by those IDs, not by treating an arbitrary Cartesian product as the original record. SQL permits creator/author FKs to become NULL after account deletion; display queries therefore use LEFT JOIN to preserve the remaining content.
+
+### JSONB and Geometry Scope
+
+`custom_properties` is an opaque application payload for shape-specific attributes (e.g. path points or font options). The normalization argument treats it as one domain value and does not assert relational FDs inside that JSON. Core identity, membership and ownership data must stay in the normalized columns.
+
+`pos_x,pos_y` denote the **object centre in canvas coordinates**, `width,height` are local unscaled bounds, scale is positive, and rotation is clockwise in screen coordinates. An exporter must normalise non-centre origins with the object's actual centre and flatten group/skew/flip transforms before persistence. A01 computes a conservative rotated/scaled rectangle including a centred scaling stroke; shadows and non-scaling strokes need exporter-normalised bounds. This is a persistence contract, not a claim that the application already implements the SQL adapter.
+
+The current schema records creation/update timestamps and original creators. It does **not** store an edit-history log or last-editor identity.
 
 ---
 
