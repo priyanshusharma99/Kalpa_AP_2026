@@ -1,0 +1,304 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1960" viewBox="0 0 2400 1960">
+<rect width="2400" height="1960" fill="#0f172a"/>
+<style>text{font-family:Arial,sans-serif;fill:#e2e8f0}.title{font-size:32px;font-weight:bold}.small{font-size:17px}.col{font-size:19px}.type{font-size:17px;fill:#cbd5e1}.edge{fill:none;stroke:#38bdf8;stroke-width:3}.tag{font-size:19px;font-weight:bold;fill:#7dd3fc;paint-order:stroke;stroke:#0f172a;stroke-width:6px}</style>
+<text x="50" y="54" class="title">Kalpa — Relational ER Diagram</text>
+<text x="50" y="85" class="small">PostgreSQL • 7 entities • 10 foreign keys • columns generated from 03_schema.sql</text>
+<path class="edge" d="M850 210 H700 V610 H650"/>
+<text x="680" y="400" class="tag">L1</text>
+<path class="edge" d="M325 356 V560"/>
+<text x="340" y="475" class="tag">L2</text>
+<path class="edge" d="M850 680 H650"/>
+<text x="718" y="666" class="tag">L3</text>
+<path class="edge" d="M1100 392 V560"/>
+<text x="1115" y="490" class="tag">L4</text>
+<path class="edge" d="M1390 200 H1750" stroke-dasharray="9 6"/>
+<text x="1555" y="185" class="tag">L5</text>
+<path class="edge" d="M1390 760 H1550 V850 H1750"/>
+<text x="1570" y="835" class="tag">L6</text>
+<path class="edge" d="M1390 300 H1630 V1220 H1750" stroke-dasharray="9 6"/>
+<text x="1645" y="1080" class="tag">L7</text>
+<path class="edge" d="M1250 392 V455 H1460 V1080 H1250 V1160" stroke-dasharray="9 6"/>
+<text x="1475" y="1030" class="tag">L8</text>
+<path class="edge" d="M1100 914 V1160"/>
+<text x="1115" y="1125" class="tag">L9</text>
+<path class="edge" d="M1390 1330 H1750"/>
+<text x="1555" y="1315" class="tag">L10</text>
+<rect x="850" y="110" width="540" height="282" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M862 110 H1378 Q1390 110 1390 122 V158 H850 V122 Q850 110 862 110" fill="#1d4ed8"/>
+<text x="868" y="142" class="col">users</text>
+<rect x="852" y="162" width="536" height="35" fill="#24344c"/>
+<text x="862" y="187" class="type">PK</text>
+<text x="950" y="187" class="col">user_id</text>
+<text x="1378" y="187" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="862" y="223" class="type"></text>
+<text x="950" y="223" class="col">user_name</text>
+<text x="1378" y="223" text-anchor="end" class="type">VARCHAR(100)</text>
+<rect x="852" y="234" width="536" height="35" fill="#24344c"/>
+<text x="862" y="259" class="type">UQ</text>
+<text x="950" y="259" class="col">user_email</text>
+<text x="1378" y="259" text-anchor="end" class="type">VARCHAR(255)</text>
+<text x="862" y="295" class="type"></text>
+<text x="950" y="295" class="col">avatar_url</text>
+<text x="1378" y="295" text-anchor="end" class="type">TEXT ?</text>
+<rect x="852" y="306" width="536" height="35" fill="#24344c"/>
+<text x="862" y="331" class="type"></text>
+<text x="950" y="331" class="col">created_at</text>
+<text x="1378" y="331" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<text x="862" y="367" class="type"></text>
+<text x="950" y="367" class="col">updated_at</text>
+<text x="1378" y="367" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="50" y="110" width="550" height="246" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M62 110 H588 Q600 110 600 122 V158 H50 V122 Q50 110 62 110" fill="#1d4ed8"/>
+<text x="68" y="142" class="col">role_permissions</text>
+<rect x="52" y="162" width="546" height="35" fill="#24344c"/>
+<text x="62" y="187" class="type">PK</text>
+<text x="150" y="187" class="col">role_name</text>
+<text x="588" y="187" text-anchor="end" class="type">VARCHAR(32)</text>
+<text x="62" y="223" class="type"></text>
+<text x="150" y="223" class="col">access_level_desc</text>
+<text x="588" y="223" text-anchor="end" class="type">TEXT</text>
+<rect x="52" y="234" width="546" height="35" fill="#24344c"/>
+<text x="62" y="259" class="type"></text>
+<text x="150" y="259" class="col">can_edit</text>
+<text x="588" y="259" text-anchor="end" class="type">BOOLEAN</text>
+<text x="62" y="295" class="type"></text>
+<text x="150" y="295" class="col">can_comment</text>
+<text x="588" y="295" text-anchor="end" class="type">BOOLEAN</text>
+<rect x="52" y="306" width="546" height="35" fill="#24344c"/>
+<text x="62" y="331" class="type"></text>
+<text x="150" y="331" class="col">can_share</text>
+<text x="588" y="331" text-anchor="end" class="type">BOOLEAN</text>
+<rect x="850" y="560" width="540" height="354" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M862 560 H1378 Q1390 560 1390 572 V608 H850 V572 Q850 560 862 560" fill="#1d4ed8"/>
+<text x="868" y="592" class="col">projects</text>
+<rect x="852" y="612" width="536" height="35" fill="#24344c"/>
+<text x="862" y="637" class="type">PK</text>
+<text x="950" y="637" class="col">project_id</text>
+<text x="1378" y="637" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="862" y="673" class="type"></text>
+<text x="950" y="673" class="col">project_title</text>
+<text x="1378" y="673" text-anchor="end" class="type">VARCHAR(255)</text>
+<rect x="852" y="684" width="536" height="35" fill="#24344c"/>
+<text x="862" y="709" class="type"></text>
+<text x="950" y="709" class="col">canvas_width</text>
+<text x="1378" y="709" text-anchor="end" class="type">INT</text>
+<text x="862" y="745" class="type"></text>
+<text x="950" y="745" class="col">canvas_height</text>
+<text x="1378" y="745" text-anchor="end" class="type">INT</text>
+<rect x="852" y="756" width="536" height="35" fill="#24344c"/>
+<text x="862" y="781" class="type"></text>
+<text x="950" y="781" class="col">canvas_bg_color</text>
+<text x="1378" y="781" text-anchor="end" class="type">VARCHAR(16)</text>
+<text x="862" y="817" class="type">FK</text>
+<text x="950" y="817" class="col">owner_id</text>
+<text x="1378" y="817" text-anchor="end" class="type">VARCHAR(64)</text>
+<rect x="852" y="828" width="536" height="35" fill="#24344c"/>
+<text x="862" y="853" class="type"></text>
+<text x="950" y="853" class="col">created_at</text>
+<text x="1378" y="853" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<text x="862" y="889" class="type"></text>
+<text x="950" y="889" class="col">updated_at</text>
+<text x="1378" y="889" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="50" y="560" width="600" height="210" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M62 560 H638 Q650 560 650 572 V608 H50 V572 Q50 560 62 560" fill="#1d4ed8"/>
+<text x="68" y="592" class="col">project_collaborators</text>
+<rect x="52" y="612" width="596" height="35" fill="#24344c"/>
+<text x="62" y="637" class="type">PK/FK</text>
+<text x="150" y="637" class="col">project_id</text>
+<text x="638" y="637" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="62" y="673" class="type">PK/FK</text>
+<text x="150" y="673" class="col">user_id</text>
+<text x="638" y="673" text-anchor="end" class="type">VARCHAR(64)</text>
+<rect x="52" y="684" width="596" height="35" fill="#24344c"/>
+<text x="62" y="709" class="type">FK</text>
+<text x="150" y="709" class="col">role_name</text>
+<text x="638" y="709" text-anchor="end" class="type">VARCHAR(32)</text>
+<text x="62" y="745" class="type"></text>
+<text x="150" y="745" class="col">joined_at</text>
+<text x="638" y="745" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="1750" y="110" width="600" height="822" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M1762 110 H2338 Q2350 110 2350 122 V158 H1750 V122 Q1750 110 1762 110" fill="#1d4ed8"/>
+<text x="1768" y="142" class="col">canvas_elements</text>
+<rect x="1752" y="162" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="187" class="type">PK</text>
+<text x="1850" y="187" class="col">element_id</text>
+<text x="2338" y="187" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="1762" y="223" class="type">FK</text>
+<text x="1850" y="223" class="col">project_id</text>
+<text x="2338" y="223" text-anchor="end" class="type">VARCHAR(64)</text>
+<rect x="1752" y="234" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="259" class="type"></text>
+<text x="1850" y="259" class="col">shape_type</text>
+<text x="2338" y="259" text-anchor="end" class="type">VARCHAR(32)</text>
+<text x="1762" y="295" class="type"></text>
+<text x="1850" y="295" class="col">pos_x</text>
+<text x="2338" y="295" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<rect x="1752" y="306" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="331" class="type"></text>
+<text x="1850" y="331" class="col">pos_y</text>
+<text x="2338" y="331" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<text x="1762" y="367" class="type"></text>
+<text x="1850" y="367" class="col">width</text>
+<text x="2338" y="367" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<rect x="1752" y="378" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="403" class="type"></text>
+<text x="1850" y="403" class="col">height</text>
+<text x="2338" y="403" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<text x="1762" y="439" class="type"></text>
+<text x="1850" y="439" class="col">scale_x</text>
+<text x="2338" y="439" text-anchor="end" class="type">NUMERIC(5,2)</text>
+<rect x="1752" y="450" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="475" class="type"></text>
+<text x="1850" y="475" class="col">scale_y</text>
+<text x="2338" y="475" text-anchor="end" class="type">NUMERIC(5,2)</text>
+<text x="1762" y="511" class="type"></text>
+<text x="1850" y="511" class="col">rotation</text>
+<text x="2338" y="511" text-anchor="end" class="type">NUMERIC(6,2)</text>
+<rect x="1752" y="522" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="547" class="type"></text>
+<text x="1850" y="547" class="col">opacity</text>
+<text x="2338" y="547" text-anchor="end" class="type">NUMERIC(3,2)</text>
+<text x="1762" y="583" class="type"></text>
+<text x="1850" y="583" class="col">fill_color</text>
+<text x="2338" y="583" text-anchor="end" class="type">VARCHAR(32) ?</text>
+<rect x="1752" y="594" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="619" class="type"></text>
+<text x="1850" y="619" class="col">stroke_color</text>
+<text x="2338" y="619" text-anchor="end" class="type">VARCHAR(32) ?</text>
+<text x="1762" y="655" class="type"></text>
+<text x="1850" y="655" class="col">stroke_width</text>
+<text x="2338" y="655" text-anchor="end" class="type">NUMERIC(5,2)</text>
+<rect x="1752" y="666" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="691" class="type"></text>
+<text x="1850" y="691" class="col">z_index</text>
+<text x="2338" y="691" text-anchor="end" class="type">INT</text>
+<text x="1762" y="727" class="type"></text>
+<text x="1850" y="727" class="col">text_content</text>
+<text x="2338" y="727" text-anchor="end" class="type">TEXT ?</text>
+<rect x="1752" y="738" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="763" class="type"></text>
+<text x="1850" y="763" class="col">image_url</text>
+<text x="2338" y="763" text-anchor="end" class="type">TEXT ?</text>
+<text x="1762" y="799" class="type"></text>
+<text x="1850" y="799" class="col">custom_properties</text>
+<text x="2338" y="799" text-anchor="end" class="type">JSONB ?</text>
+<rect x="1752" y="810" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="835" class="type">FK</text>
+<text x="1850" y="835" class="col">creator_id</text>
+<text x="2338" y="835" text-anchor="end" class="type">VARCHAR(64) ?</text>
+<text x="1762" y="871" class="type"></text>
+<text x="1850" y="871" class="col">created_at</text>
+<text x="2338" y="871" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="1752" y="882" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="907" class="type"></text>
+<text x="1850" y="907" class="col">updated_at</text>
+<text x="2338" y="907" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="850" y="1160" width="540" height="318" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M862 1160 H1378 Q1390 1160 1390 1172 V1208 H850 V1172 Q850 1160 862 1160" fill="#1d4ed8"/>
+<text x="868" y="1192" class="col">comment_pins</text>
+<rect x="852" y="1212" width="536" height="35" fill="#24344c"/>
+<text x="862" y="1237" class="type">PK</text>
+<text x="950" y="1237" class="col">comment_id</text>
+<text x="1378" y="1237" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="862" y="1273" class="type">FK</text>
+<text x="950" y="1273" class="col">project_id</text>
+<text x="1378" y="1273" text-anchor="end" class="type">VARCHAR(64)</text>
+<rect x="852" y="1284" width="536" height="35" fill="#24344c"/>
+<text x="862" y="1309" class="type"></text>
+<text x="950" y="1309" class="col">pin_x</text>
+<text x="1378" y="1309" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<text x="862" y="1345" class="type"></text>
+<text x="950" y="1345" class="col">pin_y</text>
+<text x="1378" y="1345" text-anchor="end" class="type">NUMERIC(10,2)</text>
+<rect x="852" y="1356" width="536" height="35" fill="#24344c"/>
+<text x="862" y="1381" class="type"></text>
+<text x="950" y="1381" class="col">status</text>
+<text x="1378" y="1381" text-anchor="end" class="type">VARCHAR(20)</text>
+<text x="862" y="1417" class="type">FK</text>
+<text x="950" y="1417" class="col">creator_id</text>
+<text x="1378" y="1417" text-anchor="end" class="type">VARCHAR(64) ?</text>
+<rect x="852" y="1428" width="536" height="35" fill="#24344c"/>
+<text x="862" y="1453" class="type"></text>
+<text x="950" y="1453" class="col">created_at</text>
+<text x="1378" y="1453" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="1750" y="1160" width="600" height="246" rx="12" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<path d="M1762 1160 H2338 Q2350 1160 2350 1172 V1208 H1750 V1172 Q1750 1160 1762 1160" fill="#1d4ed8"/>
+<text x="1768" y="1192" class="col">comment_replies</text>
+<rect x="1752" y="1212" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="1237" class="type">PK</text>
+<text x="1850" y="1237" class="col">reply_id</text>
+<text x="2338" y="1237" text-anchor="end" class="type">VARCHAR(64)</text>
+<text x="1762" y="1273" class="type">FK</text>
+<text x="1850" y="1273" class="col">comment_id</text>
+<text x="2338" y="1273" text-anchor="end" class="type">VARCHAR(64)</text>
+<rect x="1752" y="1284" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="1309" class="type">FK</text>
+<text x="1850" y="1309" class="col">author_id</text>
+<text x="2338" y="1309" text-anchor="end" class="type">VARCHAR(64) ?</text>
+<text x="1762" y="1345" class="type"></text>
+<text x="1850" y="1345" class="col">message_text</text>
+<text x="2338" y="1345" text-anchor="end" class="type">TEXT</text>
+<rect x="1752" y="1356" width="596" height="35" fill="#24344c"/>
+<text x="1762" y="1381" class="type"></text>
+<text x="1850" y="1381" class="col">created_at</text>
+<text x="2338" y="1381" text-anchor="end" class="type">TIMESTAMPTZ</text>
+<rect x="50" y="900" width="650" height="580" rx="12" fill="#1e293b" stroke="#475569"/>
+<text x="75" y="940" class="col">Notation and invariants</text>
+<text x="75" y="980" class="small">? = nullable; PK = primary key; FK = foreign key.</text>
+<text x="75" y="1013" class="small">UQ = unique. Dashed links have nullable user FKs.</text>
+<text x="75" y="1046" class="small">Line crossings are not junctions; use L1–L10 below.</text>
+<text x="75" y="1079" class="small"></text>
+<text x="75" y="1112" class="small">A project always has exactly one owner membership.</text>
+<text x="75" y="1145" class="small">Partial unique index permits at most one owner;</text>
+<text x="75" y="1178" class="small">sync/protection triggers maintain the matching owner.</text>
+<text x="75" y="1211" class="small">Owner transfer demotes the prior owner to editor.</text>
+<text x="75" y="1244" class="small"></text>
+<text x="75" y="1277" class="small">Content survives author deletion with a NULL author.</text>
+<text x="75" y="1310" class="small">Deleting a project cascades to its content/members.</text>
+<text x="75" y="1343" class="small"></text>
+<text x="75" y="1376" class="small">Element positions are centres; A01 includes scale,</text>
+<text x="75" y="1409" class="small">rotation and a centred scaling stroke in its bounds.</text>
+<rect x="50" y="1530" width="2300" height="390" rx="12" fill="#1e293b" stroke="#475569"/>
+<text x="75" y="1570" class="col">Foreign-key relationships and cardinality (per row at each end)</text>
+<text x="75" y="1607" class="tag">L1</text>
+<text x="145" y="1607" class="small">users → project_collaborators.user_id</text>
+<text x="820" y="1607" class="small">1 user per membership; 0..N memberships per user</text>
+<text x="1740" y="1607" class="small">DELETE CASCADE</text>
+<text x="75" y="1636" class="tag">L2</text>
+<text x="145" y="1636" class="small">role_permissions → project_collaborators.role_name</text>
+<text x="820" y="1636" class="small">1 role per membership; 0..N memberships per role</text>
+<text x="1740" y="1636" class="small">DELETE RESTRICT; UPDATE CASCADE</text>
+<text x="75" y="1665" class="tag">L3</text>
+<text x="145" y="1665" class="small">projects → project_collaborators.project_id</text>
+<text x="820" y="1665" class="small">1 project per membership; 1..N memberships per project</text>
+<text x="1740" y="1665" class="small">DELETE CASCADE</text>
+<text x="75" y="1694" class="tag">L4</text>
+<text x="145" y="1694" class="small">users → projects.owner_id</text>
+<text x="820" y="1694" class="small">1 owner per project; 0..N owned projects per user</text>
+<text x="1740" y="1694" class="small">DELETE CASCADE</text>
+<text x="75" y="1723" class="tag">L5</text>
+<text x="145" y="1723" class="small">users → canvas_elements.creator_id</text>
+<text x="820" y="1723" class="small">0..1 creator per element; 0..N elements per user</text>
+<text x="1740" y="1723" class="small">DELETE SET NULL</text>
+<text x="75" y="1752" class="tag">L6</text>
+<text x="145" y="1752" class="small">projects → canvas_elements.project_id</text>
+<text x="820" y="1752" class="small">1 project per element; 0..N elements per project</text>
+<text x="1740" y="1752" class="small">DELETE CASCADE</text>
+<text x="75" y="1781" class="tag">L7</text>
+<text x="145" y="1781" class="small">users → comment_replies.author_id</text>
+<text x="820" y="1781" class="small">0..1 author per reply; 0..N replies per user</text>
+<text x="1740" y="1781" class="small">DELETE SET NULL</text>
+<text x="75" y="1810" class="tag">L8</text>
+<text x="145" y="1810" class="small">users → comment_pins.creator_id</text>
+<text x="820" y="1810" class="small">0..1 creator per pin; 0..N pins per user</text>
+<text x="1740" y="1810" class="small">DELETE SET NULL</text>
+<text x="75" y="1839" class="tag">L9</text>
+<text x="145" y="1839" class="small">projects → comment_pins.project_id</text>
+<text x="820" y="1839" class="small">1 project per pin; 0..N pins per project</text>
+<text x="1740" y="1839" class="small">DELETE CASCADE</text>
+<text x="75" y="1868" class="tag">L10</text>
+<text x="145" y="1868" class="small">comment_pins → comment_replies.comment_id</text>
+<text x="820" y="1868" class="small">1 pin per reply; 0..N replies per pin</text>
+<text x="1740" y="1868" class="small">DELETE CASCADE</text>
+<text x="75" y="1900" class="small">All other FK updates: NO ACTION. Nullable author/creator relations preserve content; timestamps describe current state, not audit history.</text>
+</svg>

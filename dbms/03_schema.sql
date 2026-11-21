@@ -68,6 +68,10 @@ ON project_collaborators (project_id)
 WHERE role_name = 'owner';
 
 -- Canvas shapes and elements
+-- Coordinate contract: pos_x/pos_y are the object's centre in canvas space.
+-- width/height are unscaled local bounds; rotation is clockwise in screen space.
+-- An application adapter must normalise other origins to the centre and flatten
+-- group/skew/flip transforms before writing this relational representation.
 CREATE TABLE canvas_elements (
     element_id VARCHAR(64) PRIMARY KEY,
     project_id VARCHAR(64) NOT NULL,
@@ -202,7 +206,8 @@ BEGIN
     IF (TG_OP = 'DELETE') THEN
         SELECT owner_id INTO current_project_owner 
         FROM projects 
-        WHERE project_id = OLD.project_id;
+        WHERE project_id = OLD.project_id
+        FOR UPDATE;
 
         -- If project still exists and this user is its owner, prevent removal
         IF (FOUND AND OLD.user_id = current_project_owner) THEN
@@ -212,10 +217,24 @@ BEGIN
         RETURN OLD;
     END IF;
 
-    -- Look up current project owner for validation
-    SELECT owner_id INTO current_project_owner 
-    FROM projects 
-    WHERE project_id = NEW.project_id;
+    -- Validate the SOURCE project before using NEW.project_id. Looking up only
+    -- the destination permits moving an active owner row out of its project.
+    IF (TG_OP = 'UPDATE') THEN
+        SELECT owner_id INTO current_project_owner
+        FROM projects
+        WHERE project_id = OLD.project_id
+        FOR UPDATE;
+
+        IF (OLD.user_id = current_project_owner AND NEW.project_id <> OLD.project_id) THEN
+            RAISE EXCEPTION 'Cannot change project_id of project owner row.';
+        END IF;
+    END IF;
+
+    -- Lock the parent to serialize membership writes with ownership transfers.
+    SELECT owner_id INTO current_project_owner
+    FROM projects
+    WHERE project_id = NEW.project_id
+    FOR UPDATE;
 
     -- Only the current projects.owner_id may have role_name = 'owner'
     IF (NEW.role_name = 'owner' AND (current_project_owner IS NULL OR NEW.user_id <> current_project_owner)) THEN
