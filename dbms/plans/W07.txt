@@ -7,52 +7,43 @@ INSERT INTO comment_pins (comment_id, project_id, pin_x, pin_y, status, creator_
 VALUES ('comm_benchmark', 'proj_001', 320.00, 150.00, 'open', 'usr_001');
 
 --- RUN 1 ---
-BEGIN
-                                              QUERY PLAN                                               
--------------------------------------------------------------------------------------------------------
- Insert on comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.250..0.250 rows=0.00 loops=1)
-   Buffers: shared hit=56
-   ->  Result  (cost=0.00..0.01 rows=1 width=536) (actual time=0.003..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=3
- Planning Time: 0.091 ms
- Trigger for constraint fk_comments_project: time=0.492 calls=1
- Trigger for constraint fk_comments_creator: time=0.222 calls=1
- Execution Time: 0.982 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.072..0.072 rows=0.00 loops=1)
+  Buffers: shared hit=53
+  ->  Result  (cost=0.00..0.01 rows=1 width=214) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'comm_benchmark'::character varying(64), 'proj_001'::character varying(64), 320.00::numeric(10,2), 150.00::numeric(10,2), 'open'::character varying(20), 'usr_001'::character varying(64), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=3
+Planning Time: 0.030 ms
+Trigger RI_ConstraintTrigger_c_16755 for constraint fk_comments_project: time=0.201 calls=1
+Trigger RI_ConstraintTrigger_c_16760 for constraint fk_comments_creator: time=0.092 calls=1
+Execution Time: 0.373 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                              QUERY PLAN                                               
--------------------------------------------------------------------------------------------------------
- Insert on comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.233..0.233 rows=0.00 loops=1)
-   Buffers: shared hit=57
-   ->  Result  (cost=0.00..0.01 rows=1 width=536) (actual time=0.002..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=3
- Planning Time: 0.060 ms
- Trigger for constraint fk_comments_project: time=0.492 calls=1
- Trigger for constraint fk_comments_creator: time=0.252 calls=1
- Execution Time: 0.993 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.070..0.070 rows=0.00 loops=1)
+  Buffers: shared hit=54
+  ->  Result  (cost=0.00..0.01 rows=1 width=214) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'comm_benchmark'::character varying(64), 'proj_001'::character varying(64), 320.00::numeric(10,2), 150.00::numeric(10,2), 'open'::character varying(20), 'usr_001'::character varying(64), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=3
+Planning Time: 0.031 ms
+Trigger RI_ConstraintTrigger_c_16755 for constraint fk_comments_project: time=0.196 calls=1
+Trigger RI_ConstraintTrigger_c_16760 for constraint fk_comments_creator: time=0.088 calls=1
+Execution Time: 0.362 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                              QUERY PLAN                                               
--------------------------------------------------------------------------------------------------------
- Insert on comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.110..0.110 rows=0.00 loops=1)
-   Buffers: shared hit=57
-   ->  Result  (cost=0.00..0.01 rows=1 width=536) (actual time=0.001..0.002 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=3
- Planning Time: 0.048 ms
- Trigger for constraint fk_comments_project: time=0.267 calls=1
- Trigger for constraint fk_comments_creator: time=0.259 calls=1
- Execution Time: 0.646 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.comment_pins  (cost=0.00..0.01 rows=0 width=0) (actual time=0.066..0.066 rows=0.00 loops=1)
+  Buffers: shared hit=54
+  ->  Result  (cost=0.00..0.01 rows=1 width=214) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'comm_benchmark'::character varying(64), 'proj_001'::character varying(64), 320.00::numeric(10,2), 150.00::numeric(10,2), 'open'::character varying(20), 'usr_001'::character varying(64), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=3
+Planning Time: 0.030 ms
+Trigger RI_ConstraintTrigger_c_16755 for constraint fk_comments_project: time=0.186 calls=1
+Trigger RI_ConstraintTrigger_c_16760 for constraint fk_comments_creator: time=0.085 calls=1
+Execution Time: 0.346 ms
 ROLLBACK

@@ -6,79 +6,172 @@ SQL:
 INSERT INTO canvas_elements (
     element_id, project_id, shape_type, pos_x, pos_y, width, height,
     scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
-    stroke_width, z_index, custom_properties, creator_id
+    stroke_width, z_index, text_content, image_url, custom_properties, creator_id
 ) VALUES (
     'elem_upsert_01', 'proj_001', 'rect', 400.00, 200.00, 150.00, 100.00,
     1.00, 1.00, 0.00, 1.00, '#6366F1', '#4F46E5',
-    1.50, 15, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
+    1.50, 15, NULL, NULL, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
 )
 ON CONFLICT (element_id) DO UPDATE SET
+    shape_type = EXCLUDED.shape_type,
     pos_x = EXCLUDED.pos_x,
     pos_y = EXCLUDED.pos_y,
     width = EXCLUDED.width,
     height = EXCLUDED.height,
+    scale_x = EXCLUDED.scale_x,
+    scale_y = EXCLUDED.scale_y,
+    rotation = EXCLUDED.rotation,
+    opacity = EXCLUDED.opacity,
     fill_color = EXCLUDED.fill_color,
-    updated_at = CURRENT_TIMESTAMP;
+    stroke_color = EXCLUDED.stroke_color,
+    stroke_width = EXCLUDED.stroke_width,
+    z_index = EXCLUDED.z_index,
+    text_content = EXCLUDED.text_content,
+    image_url = EXCLUDED.image_url,
+    custom_properties = EXCLUDED.custom_properties,
+    updated_at = CURRENT_TIMESTAMP
+
+
+WHERE canvas_elements.project_id = EXCLUDED.project_id;
 
 --- RUN 1 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.128..0.128 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: canvas_elements_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=41
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.091 ms
- Trigger for constraint fk_elements_project: time=0.294 calls=1
- Trigger for constraint fk_elements_creator: time=0.092 calls=1
- Execution Time: 0.555 ms
-(13 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.110..0.110 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=36
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=89
+Planning Time: 0.078 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.200 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.092 calls=1
+Execution Time: 0.437 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.118..0.118 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: canvas_elements_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=41
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.106 ms
- Trigger for constraint fk_elements_project: time=0.206 calls=1
- Trigger for constraint fk_elements_creator: time=0.081 calls=1
- Execution Time: 0.443 ms
-(13 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.116..0.116 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=37
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=89
+Planning Time: 0.078 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.205 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.104 calls=1
+Execution Time: 0.461 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.103..0.103 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: canvas_elements_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=41
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.077 ms
- Trigger for constraint fk_elements_project: time=0.228 calls=1
- Trigger for constraint fk_elements_creator: time=0.081 calls=1
- Execution Time: 0.441 ms
-(13 rows)
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.109..0.109 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=37
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=89
+Planning Time: 0.083 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.184 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.094 calls=1
+Execution Time: 0.424 ms
+ROLLBACK
 
+=== SUPPLEMENTAL CONFLICT UPDATE PATH ===
+Setup (inside each rolled-back transaction):
+INSERT INTO canvas_elements (
+    element_id, project_id, shape_type, pos_x, pos_y, width, height,
+    scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
+    stroke_width, z_index, text_content, image_url, custom_properties, creator_id
+) VALUES (
+    'elem_upsert_01', 'proj_001', 'rect', 400.00, 200.00, 150.00, 100.00,
+    1.00, 1.00, 0.00, 1.00, '#6366F1', '#4F46E5',
+    1.50, 15, NULL, NULL, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
+)
+ON CONFLICT (element_id) DO UPDATE SET
+    shape_type = EXCLUDED.shape_type,
+    pos_x = EXCLUDED.pos_x,
+    pos_y = EXCLUDED.pos_y,
+    width = EXCLUDED.width,
+    height = EXCLUDED.height,
+    scale_x = EXCLUDED.scale_x,
+    scale_y = EXCLUDED.scale_y,
+    rotation = EXCLUDED.rotation,
+    opacity = EXCLUDED.opacity,
+    fill_color = EXCLUDED.fill_color,
+    stroke_color = EXCLUDED.stroke_color,
+    stroke_width = EXCLUDED.stroke_width,
+    z_index = EXCLUDED.z_index,
+    text_content = EXCLUDED.text_content,
+    image_url = EXCLUDED.image_url,
+    custom_properties = EXCLUDED.custom_properties,
+    updated_at = CURRENT_TIMESTAMP
+
+
+WHERE canvas_elements.project_id = EXCLUDED.project_id;
+UPDATE canvas_elements SET shape_type='text', rotation=45, scale_x=2, opacity=0.5, stroke_color='#FFFFFF', z_index=99, text_content='old', custom_properties='{}'::jsonb WHERE element_id='elem_upsert_01';
+
+--- UPDATE RUN 1 ---
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.032..0.032 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=14
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning Time: 0.011 ms
+Trigger RI_ConstraintTrigger_c_16732 for constraint fk_elements_project: time=0.017 calls=1
+Trigger RI_ConstraintTrigger_c_16737 for constraint fk_elements_creator: time=0.010 calls=1
+Trigger trg_canvas_elements_updated_at: time=0.003 calls=1
+Execution Time: 0.065 ms
+ROLLBACK
+
+--- UPDATE RUN 2 ---
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.026..0.026 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=14
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning Time: 0.010 ms
+Trigger RI_ConstraintTrigger_c_16732 for constraint fk_elements_project: time=0.018 calls=1
+Trigger RI_ConstraintTrigger_c_16737 for constraint fk_elements_creator: time=0.008 calls=1
+Trigger trg_canvas_elements_updated_at: time=0.002 calls=1
+Execution Time: 0.057 ms
+ROLLBACK
+
+--- UPDATE RUN 3 ---
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.037..0.037 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: canvas_elements_pkey
+  Conflict Filter: ((canvas_elements.project_id)::text = (excluded.project_id)::text)
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=14
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'elem_upsert_01'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 400.00::numeric(10,2), 200.00::numeric(10,2), 150.00::numeric(10,2), 100.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#6366F1'::character varying(32), '#4F46E5'::character varying(32), 1.50::numeric(5,2), 15, NULL::text, NULL::text, '{"borderRadius": "4px"}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning Time: 0.014 ms
+Trigger RI_ConstraintTrigger_c_16732 for constraint fk_elements_project: time=0.025 calls=1
+Trigger RI_ConstraintTrigger_c_16737 for constraint fk_elements_creator: time=0.009 calls=1
+Trigger trg_canvas_elements_updated_at: time=0.002 calls=1
+Execution Time: 0.079 ms
 ROLLBACK

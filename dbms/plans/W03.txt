@@ -9,70 +9,120 @@ ON CONFLICT (project_id, user_id)
 DO UPDATE SET role_name = EXCLUDED.role_name;
 
 --- RUN 1 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Insert on project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=1.706..1.706 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: project_collaborators_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=411
-   ->  Result  (cost=0.00..0.01 rows=1 width=382) (actual time=0.003..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=56
- Planning Time: 0.116 ms
- Trigger for constraint fk_collab_project: time=0.068 calls=1
- Trigger for constraint fk_collab_user: time=0.102 calls=1
- Trigger for constraint fk_collab_role: time=0.088 calls=1
- Trigger trg_protect_project_owner: time=0.504 calls=1
- Execution Time: 2.051 ms
-(15 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.924..0.924 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=416
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=56
+Planning Time: 0.057 ms
+Trigger RI_ConstraintTrigger_c_16670 for constraint fk_collab_project: time=0.042 calls=1
+Trigger RI_ConstraintTrigger_c_16675 for constraint fk_collab_user: time=0.101 calls=1
+Trigger RI_ConstraintTrigger_c_16680 for constraint fk_collab_role: time=0.062 calls=1
+Trigger trg_protect_project_owner: time=0.375 calls=1
+Execution Time: 1.161 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Insert on project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=2.214..2.215 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: project_collaborators_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=411
-   ->  Result  (cost=0.00..0.01 rows=1 width=382) (actual time=0.002..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=56
- Planning Time: 0.116 ms
- Trigger for constraint fk_collab_project: time=0.132 calls=1
- Trigger for constraint fk_collab_user: time=0.241 calls=1
- Trigger for constraint fk_collab_role: time=0.219 calls=1
- Trigger trg_protect_project_owner: time=0.940 calls=1
- Execution Time: 2.891 ms
-(15 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.915..0.915 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=417
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.001..0.002 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=56
+Planning Time: 0.056 ms
+Trigger RI_ConstraintTrigger_c_16670 for constraint fk_collab_project: time=0.045 calls=1
+Trigger RI_ConstraintTrigger_c_16675 for constraint fk_collab_user: time=0.093 calls=1
+Trigger RI_ConstraintTrigger_c_16680 for constraint fk_collab_role: time=0.063 calls=1
+Trigger trg_protect_project_owner: time=0.380 calls=1
+Execution Time: 1.148 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Insert on project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=2.149..2.149 rows=0.00 loops=1)
-   Conflict Resolution: UPDATE
-   Conflict Arbiter Indexes: project_collaborators_pkey
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=411
-   ->  Result  (cost=0.00..0.01 rows=1 width=382) (actual time=0.003..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=56
- Planning Time: 0.114 ms
- Trigger for constraint fk_collab_project: time=0.072 calls=1
- Trigger for constraint fk_collab_user: time=0.101 calls=1
- Trigger for constraint fk_collab_role: time=0.086 calls=1
- Trigger trg_protect_project_owner: time=0.814 calls=1
- Execution Time: 2.489 ms
-(15 rows)
+BEGIN (rolled back after EXPLAIN)
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.817..0.817 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=417
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=56
+Planning Time: 0.050 ms
+Trigger RI_ConstraintTrigger_c_16670 for constraint fk_collab_project: time=0.039 calls=1
+Trigger RI_ConstraintTrigger_c_16675 for constraint fk_collab_user: time=0.085 calls=1
+Trigger RI_ConstraintTrigger_c_16680 for constraint fk_collab_role: time=0.060 calls=1
+Trigger trg_protect_project_owner: time=0.339 calls=1
+Execution Time: 1.029 ms
+ROLLBACK
 
+=== SUPPLEMENTAL CONFLICT UPDATE PATH ===
+Setup (inside each rolled-back transaction):
+INSERT INTO project_collaborators (project_id, user_id, role_name, joined_at)
+VALUES ('proj_001', 'usr_045', 'editor', CURRENT_TIMESTAMP)
+ON CONFLICT (project_id, user_id)
+DO UPDATE SET role_name = EXCLUDED.role_name;
+UPDATE project_collaborators SET role_name='viewer' WHERE project_id='proj_001' AND user_id='usr_045';
+
+--- UPDATE RUN 1 ---
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.036..0.036 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=19
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.000..0.000 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning Time: 0.004 ms
+Trigger RI_ConstraintTrigger_c_16671 for constraint fk_collab_project: time=0.007 calls=1
+Trigger RI_ConstraintTrigger_c_16676 for constraint fk_collab_user: time=0.007 calls=1
+Trigger RI_ConstraintTrigger_c_16681 for constraint fk_collab_role: time=0.006 calls=1
+Trigger trg_protect_project_owner: time=0.029 calls=2
+Execution Time: 0.059 ms
+ROLLBACK
+
+--- UPDATE RUN 2 ---
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.032..0.032 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=19
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.000..0.000 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning Time: 0.004 ms
+Trigger RI_ConstraintTrigger_c_16671 for constraint fk_collab_project: time=0.007 calls=1
+Trigger RI_ConstraintTrigger_c_16676 for constraint fk_collab_user: time=0.006 calls=1
+Trigger RI_ConstraintTrigger_c_16681 for constraint fk_collab_role: time=0.006 calls=1
+Trigger trg_protect_project_owner: time=0.025 calls=2
+Execution Time: 0.055 ms
+ROLLBACK
+
+--- UPDATE RUN 3 ---
+Insert on public.project_collaborators  (cost=0.00..0.01 rows=0 width=0) (actual time=0.032..0.032 rows=0.00 loops=1)
+  Conflict Resolution: UPDATE
+  Conflict Arbiter Indexes: project_collaborators_pkey
+  Tuples Inserted: 0
+  Conflicting Tuples: 1
+  Buffers: shared hit=19
+  ->  Result  (cost=0.00..0.01 rows=1 width=142) (actual time=0.000..0.000 rows=1.00 loops=1)
+        Output: 'proj_001'::character varying(64), 'usr_045'::character varying(64), 'editor'::character varying(32), CURRENT_TIMESTAMP
+Planning Time: 0.004 ms
+Trigger RI_ConstraintTrigger_c_16671 for constraint fk_collab_project: time=0.007 calls=1
+Trigger RI_ConstraintTrigger_c_16676 for constraint fk_collab_user: time=0.006 calls=1
+Trigger RI_ConstraintTrigger_c_16681 for constraint fk_collab_role: time=0.006 calls=1
+Trigger trg_protect_project_owner: time=0.025 calls=2
+Execution Time: 0.055 ms
 ROLLBACK

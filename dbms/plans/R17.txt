@@ -15,76 +15,82 @@ GROUP BY e.shape_type
 ORDER BY total_elements DESC;
 
 --- RUN 1 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.150..0.151 rows=6.00 loops=1)
-   Sort Key: (count(*)) DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=25
-   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.125..0.130 rows=6.00 loops=1)
-         Group Key: shape_type
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=22
-         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.032..0.085 rows=32.00 loops=1)
-               Recheck Cond: ((project_id)::text = 'proj_001'::text)
-               Heap Blocks: exact=21
-               Buffers: shared hit=22
-               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.018..0.018 rows=33.00 loops=1)
-                     Index Cond: ((project_id)::text = 'proj_001'::text)
-                     Index Searches: 1
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=197
- Planning Time: 0.899 ms
- Execution Time: 0.225 ms
-(20 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=1.57..1.58 rows=1 width=114) (actual time=0.037..0.038 rows=6.00 loops=1)
+  Output: shape_type, (count(*)), (round(avg(width), 2)), (round(avg(height), 2)), (min(z_index)), (max(z_index))
+  Sort Key: (count(*)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=7
+  ->  GroupAggregate  (cost=1.52..1.56 rows=1 width=114) (actual time=0.025..0.030 rows=6.00 loops=1)
+        Output: shape_type, count(*), round(avg(width), 2), round(avg(height), 2), min(z_index), max(z_index)
+        Group Key: e.shape_type
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=70) (actual time=0.015..0.016 rows=35.00 loops=1)
+              Output: shape_type, width, height, z_index
+              Sort Key: e.shape_type
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=70) (actual time=0.003..0.006 rows=35.00 loops=1)
+                    Output: shape_type, width, height, z_index
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=192
+Planning Time: 0.259 ms
+Execution Time: 0.060 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.154..0.155 rows=6.00 loops=1)
-   Sort Key: (count(*)) DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=25
-   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.129..0.133 rows=6.00 loops=1)
-         Group Key: shape_type
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=22
-         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.025..0.087 rows=32.00 loops=1)
-               Recheck Cond: ((project_id)::text = 'proj_001'::text)
-               Heap Blocks: exact=21
-               Buffers: shared hit=22
-               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.015..0.015 rows=33.00 loops=1)
-                     Index Cond: ((project_id)::text = 'proj_001'::text)
-                     Index Searches: 1
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=197
- Planning Time: 0.867 ms
- Execution Time: 0.227 ms
-(20 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=1.57..1.58 rows=1 width=114) (actual time=0.035..0.035 rows=6.00 loops=1)
+  Output: shape_type, (count(*)), (round(avg(width), 2)), (round(avg(height), 2)), (min(z_index)), (max(z_index))
+  Sort Key: (count(*)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=7
+  ->  GroupAggregate  (cost=1.52..1.56 rows=1 width=114) (actual time=0.023..0.028 rows=6.00 loops=1)
+        Output: shape_type, count(*), round(avg(width), 2), round(avg(height), 2), min(z_index), max(z_index)
+        Group Key: e.shape_type
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=70) (actual time=0.014..0.015 rows=35.00 loops=1)
+              Output: shape_type, width, height, z_index
+              Sort Key: e.shape_type
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=70) (actual time=0.003..0.006 rows=35.00 loops=1)
+                    Output: shape_type, width, height, z_index
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=192
+Planning Time: 0.228 ms
+Execution Time: 0.055 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=27.33..27.34 rows=6 width=86) (actual time=0.117..0.118 rows=6.00 loops=1)
-   Sort Key: (count(*)) DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=25
-   ->  HashAggregate  (cost=27.13..27.25 rows=6 width=86) (actual time=0.097..0.101 rows=6.00 loops=1)
-         Group Key: shape_type
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=22
-         ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=20) (actual time=0.021..0.067 rows=32.00 loops=1)
-               Recheck Cond: ((project_id)::text = 'proj_001'::text)
-               Heap Blocks: exact=21
-               Buffers: shared hit=22
-               ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.012..0.012 rows=33.00 loops=1)
-                     Index Cond: ((project_id)::text = 'proj_001'::text)
-                     Index Searches: 1
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=197
- Planning Time: 0.676 ms
- Execution Time: 0.194 ms
-(20 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=1.57..1.58 rows=1 width=114) (actual time=0.040..0.040 rows=6.00 loops=1)
+  Output: shape_type, (count(*)), (round(avg(width), 2)), (round(avg(height), 2)), (min(z_index)), (max(z_index))
+  Sort Key: (count(*)) DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=7
+  ->  GroupAggregate  (cost=1.52..1.56 rows=1 width=114) (actual time=0.026..0.031 rows=6.00 loops=1)
+        Output: shape_type, count(*), round(avg(width), 2), round(avg(height), 2), min(z_index), max(z_index)
+        Group Key: e.shape_type
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=70) (actual time=0.016..0.017 rows=35.00 loops=1)
+              Output: shape_type, width, height, z_index
+              Sort Key: e.shape_type
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=70) (actual time=0.003..0.006 rows=35.00 loops=1)
+                    Output: shape_type, width, height, z_index
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=192
+Planning Time: 0.242 ms
+Execution Time: 0.062 ms
+ROLLBACK

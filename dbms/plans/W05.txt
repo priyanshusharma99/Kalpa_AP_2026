@@ -14,61 +14,49 @@ SET pos_x = 310.50,
 WHERE element_id = 'elem_0026' AND project_id = 'proj_001';
 
 --- RUN 1 ---
-BEGIN
-                                                                   QUERY PLAN                                                                    
--------------------------------------------------------------------------------------------------------------------------------------------------
- Update on canvas_elements  (cost=0.28..8.30 rows=0 width=0) (actual time=0.029..0.029 rows=0.00 loops=1)
-   Buffers: shared hit=3
-   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.30 rows=1 width=164) (actual time=0.028..0.028 rows=0.00 loops=1)
-         Index Cond: ((element_id)::text = 'elem_0026'::text)
-         Filter: ((project_id)::text = 'proj_001'::text)
-         Rows Removed by Filter: 1
-         Index Searches: 1
-         Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=129
- Planning Time: 0.685 ms
- Execution Time: 0.156 ms
-(12 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.canvas_elements  (cost=0.00..3.23 rows=0 width=0) (actual time=0.617..0.617 rows=0.00 loops=1)
+  Buffers: shared hit=56
+  ->  Seq Scan on public.canvas_elements  (cost=0.00..3.23 rows=1 width=116) (actual time=0.007..0.009 rows=1.00 loops=1)
+        Output: 310.50::numeric(10,2), 420.00::numeric(10,2), 220.00::numeric(10,2), 150.00::numeric(10,2), '#10B981'::character varying(32), 30, CURRENT_TIMESTAMP, ctid
+        Filter: (((canvas_elements.element_id)::text = 'elem_0026'::text) AND ((canvas_elements.project_id)::text = 'proj_001'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=123
+Planning Time: 0.215 ms
+Trigger trg_canvas_elements_updated_at: time=0.051 calls=1
+Execution Time: 0.647 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                                                   QUERY PLAN                                                                    
--------------------------------------------------------------------------------------------------------------------------------------------------
- Update on canvas_elements  (cost=0.28..8.30 rows=0 width=0) (actual time=0.023..0.023 rows=0.00 loops=1)
-   Buffers: shared hit=3
-   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.30 rows=1 width=164) (actual time=0.022..0.022 rows=0.00 loops=1)
-         Index Cond: ((element_id)::text = 'elem_0026'::text)
-         Filter: ((project_id)::text = 'proj_001'::text)
-         Rows Removed by Filter: 1
-         Index Searches: 1
-         Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=129
- Planning Time: 0.649 ms
- Execution Time: 0.128 ms
-(12 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.canvas_elements  (cost=0.00..3.23 rows=0 width=0) (actual time=0.571..0.571 rows=0.00 loops=1)
+  Buffers: shared hit=55
+  ->  Seq Scan on public.canvas_elements  (cost=0.00..3.23 rows=1 width=116) (actual time=0.008..0.009 rows=1.00 loops=1)
+        Output: 310.50::numeric(10,2), 420.00::numeric(10,2), 220.00::numeric(10,2), 150.00::numeric(10,2), '#10B981'::character varying(32), 30, CURRENT_TIMESTAMP, ctid
+        Filter: (((canvas_elements.element_id)::text = 'elem_0026'::text) AND ((canvas_elements.project_id)::text = 'proj_001'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=123
+Planning Time: 0.184 ms
+Trigger trg_canvas_elements_updated_at: time=0.046 calls=1
+Execution Time: 0.597 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                                                   QUERY PLAN                                                                    
--------------------------------------------------------------------------------------------------------------------------------------------------
- Update on canvas_elements  (cost=0.28..8.30 rows=0 width=0) (actual time=0.031..0.032 rows=0.00 loops=1)
-   Buffers: shared hit=3
-   ->  Index Scan using canvas_elements_pkey on canvas_elements  (cost=0.28..8.30 rows=1 width=164) (actual time=0.030..0.030 rows=0.00 loops=1)
-         Index Cond: ((element_id)::text = 'elem_0026'::text)
-         Filter: ((project_id)::text = 'proj_001'::text)
-         Rows Removed by Filter: 1
-         Index Searches: 1
-         Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=129
- Planning Time: 0.806 ms
- Execution Time: 0.148 ms
-(12 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.canvas_elements  (cost=0.00..3.23 rows=0 width=0) (actual time=0.610..0.610 rows=0.00 loops=1)
+  Buffers: shared hit=55
+  ->  Seq Scan on public.canvas_elements  (cost=0.00..3.23 rows=1 width=116) (actual time=0.008..0.009 rows=1.00 loops=1)
+        Output: 310.50::numeric(10,2), 420.00::numeric(10,2), 220.00::numeric(10,2), 150.00::numeric(10,2), '#10B981'::character varying(32), 30, CURRENT_TIMESTAMP, ctid
+        Filter: (((canvas_elements.element_id)::text = 'elem_0026'::text) AND ((canvas_elements.project_id)::text = 'proj_001'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=123
+Planning Time: 0.192 ms
+Trigger trg_canvas_elements_updated_at: time=0.054 calls=1
+Execution Time: 0.638 ms
 ROLLBACK

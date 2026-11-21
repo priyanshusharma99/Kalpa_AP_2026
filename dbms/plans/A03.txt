@@ -24,58 +24,79 @@ FROM layer_sequence
 ORDER BY z_index ASC;
 
 --- RUN 1 ---
-QUERY PLAN                                                                       
---------------------------------------------------------------------------------------------------------------------------------------------------------
- Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.013..0.025 rows=35.00 loops=1)
-   Buffers: shared hit=2
-   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.012..0.023 rows=35.00 loops=1)
-         Window: w1 AS (ORDER BY canvas_elements.z_index)
-         Storage: Memory  Maximum Storage: 17kB
-         Buffers: shared hit=2
-         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.005..0.008 rows=35.00 loops=1)
-               Index Cond: ((project_id)::text = 'proj_001'::text)
-               Index Searches: 1
-               Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.321 ms
- Execution Time: 0.053 ms
-(14 rows)
+BEGIN (rolled back after EXPLAIN)
+Subquery Scan on layer_sequence  (cost=1.52..1.55 rows=1 width=100) (actual time=0.020..0.028 rows=35.00 loops=1)
+  Output: layer_sequence.element_id, layer_sequence.shape_type, layer_sequence.z_index, layer_sequence.prev_z, layer_sequence.next_z, (layer_sequence.z_index - layer_sequence.prev_z)
+  Buffers: shared hit=4
+  ->  WindowAgg  (cost=1.52..1.54 rows=1 width=96) (actual time=0.019..0.026 rows=35.00 loops=1)
+        Output: canvas_elements.element_id, canvas_elements.shape_type, canvas_elements.z_index, lag(canvas_elements.z_index) OVER w1, lead(canvas_elements.z_index) OVER w1
+        Window: w1 AS (ORDER BY canvas_elements.z_index)
+        Storage: Memory  Maximum Storage: 17kB
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=88) (actual time=0.014..0.015 rows=35.00 loops=1)
+              Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+              Sort Key: canvas_elements.z_index
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements  (cost=0.00..1.51 rows=1 width=88) (actual time=0.003..0.006 rows=35.00 loops=1)
+                    Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+                    Filter: ((canvas_elements.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=144
+Planning Time: 0.239 ms
+Execution Time: 0.051 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                       
---------------------------------------------------------------------------------------------------------------------------------------------------------
- Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.026..0.041 rows=35.00 loops=1)
-   Buffers: shared hit=2
-   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.020..0.033 rows=35.00 loops=1)
-         Window: w1 AS (ORDER BY canvas_elements.z_index)
-         Storage: Memory  Maximum Storage: 17kB
-         Buffers: shared hit=2
-         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.008..0.013 rows=35.00 loops=1)
-               Index Cond: ((project_id)::text = 'proj_001'::text)
-               Index Searches: 1
-               Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.338 ms
- Execution Time: 0.086 ms
-(14 rows)
+BEGIN (rolled back after EXPLAIN)
+Subquery Scan on layer_sequence  (cost=1.52..1.55 rows=1 width=100) (actual time=0.022..0.030 rows=35.00 loops=1)
+  Output: layer_sequence.element_id, layer_sequence.shape_type, layer_sequence.z_index, layer_sequence.prev_z, layer_sequence.next_z, (layer_sequence.z_index - layer_sequence.prev_z)
+  Buffers: shared hit=4
+  ->  WindowAgg  (cost=1.52..1.54 rows=1 width=96) (actual time=0.021..0.028 rows=35.00 loops=1)
+        Output: canvas_elements.element_id, canvas_elements.shape_type, canvas_elements.z_index, lag(canvas_elements.z_index) OVER w1, lead(canvas_elements.z_index) OVER w1
+        Window: w1 AS (ORDER BY canvas_elements.z_index)
+        Storage: Memory  Maximum Storage: 17kB
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=88) (actual time=0.017..0.017 rows=35.00 loops=1)
+              Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+              Sort Key: canvas_elements.z_index
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements  (cost=0.00..1.51 rows=1 width=88) (actual time=0.004..0.007 rows=35.00 loops=1)
+                    Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+                    Filter: ((canvas_elements.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=144
+Planning Time: 0.421 ms
+Execution Time: 0.056 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                       
---------------------------------------------------------------------------------------------------------------------------------------------------------
- Subquery Scan on layer_sequence  (cost=0.14..8.18 rows=1 width=244) (actual time=0.020..0.032 rows=35.00 loops=1)
-   Buffers: shared hit=2
-   ->  WindowAgg  (cost=0.14..8.18 rows=1 width=240) (actual time=0.019..0.029 rows=35.00 loops=1)
-         Window: w1 AS (ORDER BY canvas_elements.z_index)
-         Storage: Memory  Maximum Storage: 17kB
-         Buffers: shared hit=2
-         ->  Index Scan using idx_elements_z_index on canvas_elements  (cost=0.14..8.16 rows=1 width=232) (actual time=0.007..0.011 rows=35.00 loops=1)
-               Index Cond: ((project_id)::text = 'proj_001'::text)
-               Index Searches: 1
-               Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.354 ms
- Execution Time: 0.081 ms
-(14 rows)
+BEGIN (rolled back after EXPLAIN)
+Subquery Scan on layer_sequence  (cost=1.52..1.55 rows=1 width=100) (actual time=0.019..0.028 rows=35.00 loops=1)
+  Output: layer_sequence.element_id, layer_sequence.shape_type, layer_sequence.z_index, layer_sequence.prev_z, layer_sequence.next_z, (layer_sequence.z_index - layer_sequence.prev_z)
+  Buffers: shared hit=4
+  ->  WindowAgg  (cost=1.52..1.54 rows=1 width=96) (actual time=0.019..0.025 rows=35.00 loops=1)
+        Output: canvas_elements.element_id, canvas_elements.shape_type, canvas_elements.z_index, lag(canvas_elements.z_index) OVER w1, lead(canvas_elements.z_index) OVER w1
+        Window: w1 AS (ORDER BY canvas_elements.z_index)
+        Storage: Memory  Maximum Storage: 17kB
+        Buffers: shared hit=4
+        ->  Sort  (cost=1.52..1.53 rows=1 width=88) (actual time=0.014..0.015 rows=35.00 loops=1)
+              Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+              Sort Key: canvas_elements.z_index
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=4
+              ->  Seq Scan on public.canvas_elements  (cost=0.00..1.51 rows=1 width=88) (actual time=0.003..0.006 rows=35.00 loops=1)
+                    Output: canvas_elements.z_index, canvas_elements.element_id, canvas_elements.shape_type
+                    Filter: ((canvas_elements.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=144
+Planning Time: 0.239 ms
+Execution Time: 0.050 ms
+ROLLBACK

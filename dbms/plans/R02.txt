@@ -8,40 +8,40 @@ FROM users
 WHERE user_id = 'usr_001';
 
 --- RUN 1 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=86) (actual time=0.010..0.017 rows=1.00 loops=1)
-   Filter: ((user_id)::text = 'usr_001'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.689 ms
- Execution Time: 0.063 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_pkey on public.users  (cost=0.14..8.16 rows=1 width=311) (actual time=0.001..0.002 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at, updated_at
+  Index Cond: ((users.user_id)::text = 'usr_001'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.126 ms
+Execution Time: 0.013 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=86) (actual time=0.010..0.015 rows=1.00 loops=1)
-   Filter: ((user_id)::text = 'usr_001'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.542 ms
- Execution Time: 0.052 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_pkey on public.users  (cost=0.14..8.16 rows=1 width=311) (actual time=0.001..0.002 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at, updated_at
+  Index Cond: ((users.user_id)::text = 'usr_001'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.121 ms
+Execution Time: 0.014 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=86) (actual time=0.016..0.023 rows=1.00 loops=1)
-   Filter: ((user_id)::text = 'usr_001'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=92
- Planning Time: 0.615 ms
- Execution Time: 0.066 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_pkey on public.users  (cost=0.14..8.16 rows=1 width=311) (actual time=0.001..0.001 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at, updated_at
+  Index Cond: ((users.user_id)::text = 'usr_001'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.120 ms
+Execution Time: 0.013 ms
+ROLLBACK

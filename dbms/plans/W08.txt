@@ -8,55 +8,49 @@ SET status = 'resolved'
 WHERE comment_id = 'comm_001' AND project_id = 'proj_001';
 
 --- RUN 1 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.017..0.017 rows=0.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.016..0.017 rows=0.00 loops=1)
-         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
-         Rows Removed by Filter: 100
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=80
- Planning Time: 0.374 ms
- Execution Time: 0.088 ms
-(10 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.comment_pins  (cost=0.15..8.17 rows=0 width=0) (actual time=0.048..0.048 rows=0.00 loops=1)
+  Buffers: shared hit=18
+  ->  Index Scan using comment_pins_pkey on public.comment_pins  (cost=0.15..8.17 rows=1 width=30) (actual time=0.004..0.004 rows=1.00 loops=1)
+        Output: 'resolved'::character varying(20), ctid
+        Index Cond: ((comment_pins.comment_id)::text = 'comm_001'::text)
+        Filter: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=84
+Planning Time: 0.144 ms
+Execution Time: 0.080 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.028..0.029 rows=0.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.026..0.026 rows=0.00 loops=1)
-         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
-         Rows Removed by Filter: 100
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=80
- Planning Time: 0.673 ms
- Execution Time: 0.166 ms
-(10 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.comment_pins  (cost=0.15..8.17 rows=0 width=0) (actual time=0.043..0.044 rows=0.00 loops=1)
+  Buffers: shared hit=18
+  ->  Index Scan using comment_pins_pkey on public.comment_pins  (cost=0.15..8.17 rows=1 width=30) (actual time=0.004..0.005 rows=1.00 loops=1)
+        Output: 'resolved'::character varying(20), ctid
+        Index Cond: ((comment_pins.comment_id)::text = 'comm_001'::text)
+        Filter: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=84
+Planning Time: 0.134 ms
+Execution Time: 0.073 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Update on comment_pins  (cost=0.00..3.50 rows=0 width=0) (actual time=0.011..0.011 rows=0.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=1 width=64) (actual time=0.010..0.010 rows=0.00 loops=1)
-         Filter: (((comment_id)::text = 'comm_001'::text) AND ((project_id)::text = 'proj_001'::text))
-         Rows Removed by Filter: 100
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=80
- Planning Time: 0.777 ms
- Execution Time: 0.081 ms
-(10 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Update on public.comment_pins  (cost=0.15..8.17 rows=0 width=0) (actual time=0.057..0.057 rows=0.00 loops=1)
+  Buffers: shared hit=18
+  ->  Index Scan using comment_pins_pkey on public.comment_pins  (cost=0.15..8.17 rows=1 width=30) (actual time=0.006..0.006 rows=1.00 loops=1)
+        Output: 'resolved'::character varying(20), ctid
+        Index Cond: ((comment_pins.comment_id)::text = 'comm_001'::text)
+        Filter: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=84
+Planning Time: 0.160 ms
+Execution Time: 0.097 ms
 ROLLBACK

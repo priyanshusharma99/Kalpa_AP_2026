@@ -13,127 +13,163 @@ WHERE pc.user_id = 'usr_003' AND pc.role_name <> 'owner'
 ORDER BY pc.joined_at DESC;
 
 --- RUN 1 ---
-QUERY PLAN                                                                        
-----------------------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=8.54..8.55 rows=3 width=87) (actual time=0.108..0.109 rows=1.00 loops=1)
-   Sort Key: pc.joined_at DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=8
-   ->  Nested Loop  (cost=5.65..8.52 rows=3 width=87) (actual time=0.079..0.088 rows=1.00 loops=1)
-         Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-         Rows Removed by Join Filter: 2
-         Buffers: shared hit=5
-         ->  Hash Join  (cost=5.65..7.37 rows=3 width=85) (actual time=0.066..0.074 rows=1.00 loops=1)
-               Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
-               Buffers: shared hit=4
-               ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.007 rows=50.00 loops=1)
-                     Buffers: shared hit=1
-               ->  Hash  (cost=5.62..5.62 rows=3 width=47) (actual time=0.053..0.053 rows=1.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                     Buffers: shared hit=3
-                     ->  Hash Join  (cost=4.29..5.62 rows=3 width=47) (actual time=0.043..0.047 rows=1.00 loops=1)
-                           Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
-                           Buffers: shared hit=3
-                           ->  Seq Scan on projects p  (cost=0.00..1.25 rows=25 width=33) (actual time=0.003..0.004 rows=25.00 loops=1)
-                                 Buffers: shared hit=1
-                           ->  Hash  (cost=4.25..4.25 rows=3 width=23) (actual time=0.031..0.031 rows=1.00 loops=1)
-                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                                 Buffers: shared hit=2
-                                 ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=3 width=23) (actual time=0.011..0.025 rows=1.00 loops=1)
-                                       Filter: (((role_name)::text <> 'owner'::text) AND ((user_id)::text = 'usr_003'::text))
-                                       Rows Removed by Filter: 149
-                                       Buffers: shared hit=2
-         ->  Materialize  (cost=0.00..1.04 rows=3 width=8) (actual time=0.009..0.010 rows=3.00 loops=1)
-               Storage: Memory  Maximum Storage: 17kB
-               Buffers: shared hit=1
-               ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=8) (actual time=0.005..0.006 rows=3.00 loops=1)
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=344
- Planning Time: 1.776 ms
- Execution Time: 0.204 ms
-(37 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=39.78..39.78 rows=2 width=339) (actual time=0.036..0.036 rows=4.00 loops=1)
+  Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+  Sort Key: pc.joined_at DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=22
+  ->  Nested Loop  (cost=9.83..39.77 rows=2 width=339) (actual time=0.022..0.026 rows=4.00 loops=1)
+        Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+        Inner Unique: true
+        Buffers: shared hit=19
+        ->  Nested Loop  (cost=9.68..23.41 rows=2 width=337) (actual time=0.018..0.021 rows=4.00 loops=1)
+              Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=11
+              ->  Hash Join  (cost=9.53..22.70 rows=2 width=287) (actual time=0.016..0.018 rows=4.00 loops=1)
+                    Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, p.owner_id
+                    Inner Unique: true
+                    Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
+                    Buffers: shared hit=3
+                    ->  Seq Scan on public.projects p  (cost=0.00..12.50 rows=250 width=245) (actual time=0.002..0.002 rows=8.00 loops=1)
+                          Output: p.project_id, p.project_title, p.canvas_width, p.canvas_height, p.canvas_bg_color, p.owner_id, p.created_at, p.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=9.51..9.51 rows=2 width=92) (actual time=0.010..0.010 rows=4.00 loops=1)
+                          Output: pc.role_name, pc.joined_at, pc.project_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=2
+                          ->  Bitmap Heap Scan on public.project_collaborators pc  (cost=4.16..9.51 rows=2 width=92) (actual time=0.007..0.008 rows=4.00 loops=1)
+                                Output: pc.role_name, pc.joined_at, pc.project_id
+                                Recheck Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                Filter: ((pc.role_name)::text <> 'owner'::text)
+                                Rows Removed by Filter: 2
+                                Heap Blocks: exact=1
+                                Buffers: shared hit=2
+                                ->  Bitmap Index Scan on idx_collab_user  (cost=0.00..4.16 rows=2 width=0) (actual time=0.002..0.002 rows=7.00 loops=1)
+                                      Index Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                      Index Searches: 1
+                                      Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..0.35 rows=1 width=150) (actual time=0.001..0.001 rows=1.00 loops=4)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (p.owner_id)::text)
+                    Index Searches: 4
+                    Buffers: shared hit=8
+        ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=36) (actual time=0.001..0.001 rows=1.00 loops=4)
+              Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+              Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+              Index Searches: 4
+              Buffers: shared hit=8
+Planning:
+  Buffers: shared hit=326
+Planning Time: 0.429 ms
+Execution Time: 0.061 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                        
-----------------------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=8.54..8.55 rows=3 width=87) (actual time=0.096..0.097 rows=1.00 loops=1)
-   Sort Key: pc.joined_at DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=8
-   ->  Nested Loop  (cost=5.65..8.52 rows=3 width=87) (actual time=0.066..0.072 rows=1.00 loops=1)
-         Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-         Rows Removed by Join Filter: 2
-         Buffers: shared hit=5
-         ->  Hash Join  (cost=5.65..7.37 rows=3 width=85) (actual time=0.056..0.061 rows=1.00 loops=1)
-               Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
-               Buffers: shared hit=4
-               ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.006 rows=50.00 loops=1)
-                     Buffers: shared hit=1
-               ->  Hash  (cost=5.62..5.62 rows=3 width=47) (actual time=0.044..0.044 rows=1.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                     Buffers: shared hit=3
-                     ->  Hash Join  (cost=4.29..5.62 rows=3 width=47) (actual time=0.039..0.042 rows=1.00 loops=1)
-                           Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
-                           Buffers: shared hit=3
-                           ->  Seq Scan on projects p  (cost=0.00..1.25 rows=25 width=33) (actual time=0.003..0.004 rows=25.00 loops=1)
-                                 Buffers: shared hit=1
-                           ->  Hash  (cost=4.25..4.25 rows=3 width=23) (actual time=0.028..0.028 rows=1.00 loops=1)
-                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                                 Buffers: shared hit=2
-                                 ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=3 width=23) (actual time=0.010..0.022 rows=1.00 loops=1)
-                                       Filter: (((role_name)::text <> 'owner'::text) AND ((user_id)::text = 'usr_003'::text))
-                                       Rows Removed by Filter: 149
-                                       Buffers: shared hit=2
-         ->  Materialize  (cost=0.00..1.04 rows=3 width=8) (actual time=0.007..0.008 rows=3.00 loops=1)
-               Storage: Memory  Maximum Storage: 17kB
-               Buffers: shared hit=1
-               ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=8) (actual time=0.004..0.004 rows=3.00 loops=1)
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=344
- Planning Time: 1.446 ms
- Execution Time: 0.169 ms
-(37 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=39.78..39.78 rows=2 width=339) (actual time=0.031..0.031 rows=4.00 loops=1)
+  Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+  Sort Key: pc.joined_at DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=22
+  ->  Nested Loop  (cost=9.83..39.77 rows=2 width=339) (actual time=0.017..0.021 rows=4.00 loops=1)
+        Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+        Inner Unique: true
+        Buffers: shared hit=19
+        ->  Nested Loop  (cost=9.68..23.41 rows=2 width=337) (actual time=0.014..0.017 rows=4.00 loops=1)
+              Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=11
+              ->  Hash Join  (cost=9.53..22.70 rows=2 width=287) (actual time=0.013..0.014 rows=4.00 loops=1)
+                    Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, p.owner_id
+                    Inner Unique: true
+                    Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
+                    Buffers: shared hit=3
+                    ->  Seq Scan on public.projects p  (cost=0.00..12.50 rows=250 width=245) (actual time=0.002..0.002 rows=8.00 loops=1)
+                          Output: p.project_id, p.project_title, p.canvas_width, p.canvas_height, p.canvas_bg_color, p.owner_id, p.created_at, p.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=9.51..9.51 rows=2 width=92) (actual time=0.007..0.007 rows=4.00 loops=1)
+                          Output: pc.role_name, pc.joined_at, pc.project_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=2
+                          ->  Bitmap Heap Scan on public.project_collaborators pc  (cost=4.16..9.51 rows=2 width=92) (actual time=0.004..0.005 rows=4.00 loops=1)
+                                Output: pc.role_name, pc.joined_at, pc.project_id
+                                Recheck Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                Filter: ((pc.role_name)::text <> 'owner'::text)
+                                Rows Removed by Filter: 2
+                                Heap Blocks: exact=1
+                                Buffers: shared hit=2
+                                ->  Bitmap Index Scan on idx_collab_user  (cost=0.00..4.16 rows=2 width=0) (actual time=0.001..0.002 rows=7.00 loops=1)
+                                      Index Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                      Index Searches: 1
+                                      Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..0.35 rows=1 width=150) (actual time=0.000..0.000 rows=1.00 loops=4)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (p.owner_id)::text)
+                    Index Searches: 4
+                    Buffers: shared hit=8
+        ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=36) (actual time=0.001..0.001 rows=1.00 loops=4)
+              Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+              Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+              Index Searches: 4
+              Buffers: shared hit=8
+Planning:
+  Buffers: shared hit=326
+Planning Time: 0.400 ms
+Execution Time: 0.053 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                        
-----------------------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=8.54..8.55 rows=3 width=87) (actual time=0.110..0.112 rows=1.00 loops=1)
-   Sort Key: pc.joined_at DESC
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=8
-   ->  Nested Loop  (cost=5.65..8.52 rows=3 width=87) (actual time=0.080..0.089 rows=1.00 loops=1)
-         Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-         Rows Removed by Join Filter: 2
-         Buffers: shared hit=5
-         ->  Hash Join  (cost=5.65..7.37 rows=3 width=85) (actual time=0.066..0.074 rows=1.00 loops=1)
-               Hash Cond: ((u.user_id)::text = (p.owner_id)::text)
-               Buffers: shared hit=4
-               ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.007 rows=50.00 loops=1)
-                     Buffers: shared hit=1
-               ->  Hash  (cost=5.62..5.62 rows=3 width=47) (actual time=0.053..0.054 rows=1.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                     Buffers: shared hit=3
-                     ->  Hash Join  (cost=4.29..5.62 rows=3 width=47) (actual time=0.047..0.051 rows=1.00 loops=1)
-                           Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
-                           Buffers: shared hit=3
-                           ->  Seq Scan on projects p  (cost=0.00..1.25 rows=25 width=33) (actual time=0.002..0.004 rows=25.00 loops=1)
-                                 Buffers: shared hit=1
-                           ->  Hash  (cost=4.25..4.25 rows=3 width=23) (actual time=0.033..0.033 rows=1.00 loops=1)
-                                 Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                                 Buffers: shared hit=2
-                                 ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=3 width=23) (actual time=0.011..0.027 rows=1.00 loops=1)
-                                       Filter: (((role_name)::text <> 'owner'::text) AND ((user_id)::text = 'usr_003'::text))
-                                       Rows Removed by Filter: 149
-                                       Buffers: shared hit=2
-         ->  Materialize  (cost=0.00..1.04 rows=3 width=8) (actual time=0.011..0.012 rows=3.00 loops=1)
-               Storage: Memory  Maximum Storage: 17kB
-               Buffers: shared hit=1
-               ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=8) (actual time=0.005..0.005 rows=3.00 loops=1)
-                     Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=344
- Planning Time: 2.005 ms
- Execution Time: 0.205 ms
-(37 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=39.78..39.78 rows=2 width=339) (actual time=0.034..0.034 rows=4.00 loops=1)
+  Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+  Sort Key: pc.joined_at DESC
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=22
+  ->  Nested Loop  (cost=9.83..39.77 rows=2 width=339) (actual time=0.019..0.024 rows=4.00 loops=1)
+        Output: p.project_id, p.project_title, pc.role_name, rp.can_edit, rp.can_share, u.user_name, u.avatar_url, pc.joined_at
+        Inner Unique: true
+        Buffers: shared hit=19
+        ->  Nested Loop  (cost=9.68..23.41 rows=2 width=337) (actual time=0.017..0.019 rows=4.00 loops=1)
+              Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=11
+              ->  Hash Join  (cost=9.53..22.70 rows=2 width=287) (actual time=0.014..0.016 rows=4.00 loops=1)
+                    Output: pc.role_name, pc.joined_at, p.project_id, p.project_title, p.owner_id
+                    Inner Unique: true
+                    Hash Cond: ((p.project_id)::text = (pc.project_id)::text)
+                    Buffers: shared hit=3
+                    ->  Seq Scan on public.projects p  (cost=0.00..12.50 rows=250 width=245) (actual time=0.002..0.003 rows=8.00 loops=1)
+                          Output: p.project_id, p.project_title, p.canvas_width, p.canvas_height, p.canvas_bg_color, p.owner_id, p.created_at, p.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=9.51..9.51 rows=2 width=92) (actual time=0.008..0.009 rows=4.00 loops=1)
+                          Output: pc.role_name, pc.joined_at, pc.project_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=2
+                          ->  Bitmap Heap Scan on public.project_collaborators pc  (cost=4.16..9.51 rows=2 width=92) (actual time=0.005..0.005 rows=4.00 loops=1)
+                                Output: pc.role_name, pc.joined_at, pc.project_id
+                                Recheck Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                Filter: ((pc.role_name)::text <> 'owner'::text)
+                                Rows Removed by Filter: 2
+                                Heap Blocks: exact=1
+                                Buffers: shared hit=2
+                                ->  Bitmap Index Scan on idx_collab_user  (cost=0.00..4.16 rows=2 width=0) (actual time=0.002..0.002 rows=7.00 loops=1)
+                                      Index Cond: ((pc.user_id)::text = 'usr_003'::text)
+                                      Index Searches: 1
+                                      Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..0.35 rows=1 width=150) (actual time=0.001..0.001 rows=1.00 loops=4)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (p.owner_id)::text)
+                    Index Searches: 4
+                    Buffers: shared hit=8
+        ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=36) (actual time=0.001..0.001 rows=1.00 loops=4)
+              Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+              Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+              Index Searches: 4
+              Buffers: shared hit=8
+Planning:
+  Buffers: shared hit=326
+Planning Time: 0.401 ms
+Execution Time: 0.060 ms
+ROLLBACK

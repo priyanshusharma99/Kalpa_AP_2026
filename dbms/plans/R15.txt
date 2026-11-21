@@ -8,46 +8,64 @@ FROM comment_pins
 WHERE project_id = 'proj_001' AND status = 'open';
 
 --- RUN 1 ---
-QUERY PLAN                                                   
----------------------------------------------------------------------------------------------------------------
- Aggregate  (cost=3.50..3.51 rows=1 width=8) (actual time=0.036..0.036 rows=1.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=2 width=0) (actual time=0.014..0.021 rows=2.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((status)::text = 'open'::text))
-         Rows Removed by Filter: 98
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=83
- Planning Time: 0.534 ms
- Execution Time: 0.080 ms
-(10 rows)
+BEGIN (rolled back after EXPLAIN)
+Aggregate  (cost=9.51..9.52 rows=1 width=8) (actual time=0.010..0.010 rows=1.00 loops=1)
+  Output: count(*)
+  Buffers: shared hit=2
+  ->  Bitmap Heap Scan on public.comment_pins  (cost=4.16..9.51 rows=1 width=0) (actual time=0.006..0.007 rows=4.00 loops=1)
+        Recheck Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Filter: ((comment_pins.status)::text = 'open'::text)
+        Rows Removed by Filter: 1
+        Heap Blocks: exact=1
+        Buffers: shared hit=2
+        ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.002..0.002 rows=8.00 loops=1)
+              Index Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+              Index Searches: 1
+              Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=87
+Planning Time: 0.145 ms
+Execution Time: 0.027 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                   
----------------------------------------------------------------------------------------------------------------
- Aggregate  (cost=3.50..3.51 rows=1 width=8) (actual time=0.028..0.028 rows=1.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=2 width=0) (actual time=0.011..0.019 rows=2.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((status)::text = 'open'::text))
-         Rows Removed by Filter: 98
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=83
- Planning Time: 0.389 ms
- Execution Time: 0.061 ms
-(10 rows)
+BEGIN (rolled back after EXPLAIN)
+Aggregate  (cost=9.51..9.52 rows=1 width=8) (actual time=0.008..0.009 rows=1.00 loops=1)
+  Output: count(*)
+  Buffers: shared hit=2
+  ->  Bitmap Heap Scan on public.comment_pins  (cost=4.16..9.51 rows=1 width=0) (actual time=0.005..0.006 rows=4.00 loops=1)
+        Recheck Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Filter: ((comment_pins.status)::text = 'open'::text)
+        Rows Removed by Filter: 1
+        Heap Blocks: exact=1
+        Buffers: shared hit=2
+        ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.002..0.002 rows=8.00 loops=1)
+              Index Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+              Index Searches: 1
+              Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=87
+Planning Time: 0.127 ms
+Execution Time: 0.024 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                   
----------------------------------------------------------------------------------------------------------------
- Aggregate  (cost=3.50..3.51 rows=1 width=8) (actual time=0.029..0.030 rows=1.00 loops=1)
-   Buffers: shared hit=2
-   ->  Seq Scan on comment_pins  (cost=0.00..3.50 rows=2 width=0) (actual time=0.013..0.022 rows=2.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((status)::text = 'open'::text))
-         Rows Removed by Filter: 98
-         Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=83
- Planning Time: 0.411 ms
- Execution Time: 0.070 ms
-(10 rows)
+BEGIN (rolled back after EXPLAIN)
+Aggregate  (cost=9.51..9.52 rows=1 width=8) (actual time=0.009..0.010 rows=1.00 loops=1)
+  Output: count(*)
+  Buffers: shared hit=2
+  ->  Bitmap Heap Scan on public.comment_pins  (cost=4.16..9.51 rows=1 width=0) (actual time=0.006..0.007 rows=4.00 loops=1)
+        Recheck Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+        Filter: ((comment_pins.status)::text = 'open'::text)
+        Rows Removed by Filter: 1
+        Heap Blocks: exact=1
+        Buffers: shared hit=2
+        ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.002..0.002 rows=8.00 loops=1)
+              Index Cond: ((comment_pins.project_id)::text = 'proj_001'::text)
+              Index Searches: 1
+              Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=87
+Planning Time: 0.137 ms
+Execution Time: 0.026 ms
+ROLLBACK

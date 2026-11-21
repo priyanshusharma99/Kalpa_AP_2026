@@ -14,52 +14,43 @@ INSERT INTO canvas_elements (
 );
 
 --- RUN 1 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.426..0.427 rows=0.00 loops=1)
-   Buffers: shared hit=121
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.004..0.005 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=6
- Planning Time: 0.220 ms
- Trigger for constraint fk_elements_project: time=0.533 calls=1
- Trigger for constraint fk_elements_creator: time=0.268 calls=1
- Execution Time: 1.257 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.461..0.461 rows=0.00 loops=1)
+  Buffers: shared hit=126 dirtied=1 written=1
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: 'elem_benchmark'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 250.00::numeric(10,2), 350.00::numeric(10,2), 180.00::numeric(10,2), 120.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#3B82F6'::character varying(32), '#1D4ED8'::character varying(32), 1.00::numeric(5,2), 25, NULL::text, NULL::text, '{"name": "BenchRect", "isLocked": false}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.033 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.200 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.091 calls=1
+Execution Time: 0.761 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.344..0.344 rows=0.00 loops=1)
-   Buffers: shared hit=121
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.003..0.004 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=6
- Planning Time: 0.069 ms
- Trigger for constraint fk_elements_project: time=0.469 calls=1
- Trigger for constraint fk_elements_creator: time=0.222 calls=1
- Execution Time: 1.056 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.129..0.129 rows=0.00 loops=1)
+  Buffers: shared hit=120
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: 'elem_benchmark'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 250.00::numeric(10,2), 350.00::numeric(10,2), 180.00::numeric(10,2), 120.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#3B82F6'::character varying(32), '#1D4ED8'::character varying(32), 1.00::numeric(5,2), 25, NULL::text, NULL::text, '{"name": "BenchRect", "isLocked": false}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.032 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.206 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.100 calls=1
+Execution Time: 0.444 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                                QUERY PLAN                                                
-----------------------------------------------------------------------------------------------------------
- Insert on canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.164..0.164 rows=0.00 loops=1)
-   Buffers: shared hit=121
-   ->  Result  (cost=0.00..0.01 rows=1 width=926) (actual time=0.002..0.002 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=6
- Planning Time: 0.040 ms
- Trigger for constraint fk_elements_project: time=0.224 calls=1
- Trigger for constraint fk_elements_creator: time=0.094 calls=1
- Execution Time: 0.494 ms
-(9 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.canvas_elements  (cost=0.00..0.01 rows=0 width=0) (actual time=0.123..0.124 rows=0.00 loops=1)
+  Buffers: shared hit=120
+  ->  Result  (cost=0.00..0.01 rows=1 width=494) (actual time=0.001..0.002 rows=1.00 loops=1)
+        Output: 'elem_benchmark'::character varying(64), 'proj_001'::character varying(64), 'rect'::character varying(32), 250.00::numeric(10,2), 350.00::numeric(10,2), 180.00::numeric(10,2), 120.00::numeric(10,2), 1.00::numeric(5,2), 1.00::numeric(5,2), 0.00::numeric(6,2), 1.00::numeric(3,2), '#3B82F6'::character varying(32), '#1D4ED8'::character varying(32), 1.00::numeric(5,2), 25, NULL::text, NULL::text, '{"name": "BenchRect", "isLocked": false}'::jsonb, 'usr_001'::character varying(64), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.031 ms
+Trigger RI_ConstraintTrigger_c_16731 for constraint fk_elements_project: time=0.166 calls=1
+Trigger RI_ConstraintTrigger_c_16736 for constraint fk_elements_creator: time=0.082 calls=1
+Execution Time: 0.380 ms
 ROLLBACK

@@ -8,40 +8,40 @@ FROM users
 WHERE user_email = 'user1@kalpa.app';
 
 --- RUN 1 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.014..0.023 rows=1.00 loops=1)
-   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=89
- Planning Time: 0.904 ms
- Execution Time: 0.079 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_user_email_key on public.users  (cost=0.14..8.16 rows=1 width=303) (actual time=0.003..0.003 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at
+  Index Cond: ((users.user_email)::text = 'user1@kalpa.app'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.130 ms
+Execution Time: 0.015 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.011..0.017 rows=1.00 loops=1)
-   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=89
- Planning Time: 0.749 ms
- Execution Time: 0.072 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_user_email_key on public.users  (cost=0.14..8.16 rows=1 width=303) (actual time=0.003..0.003 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at
+  Index Cond: ((users.user_email)::text = 'user1@kalpa.app'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.133 ms
+Execution Time: 0.016 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                             
----------------------------------------------------------------------------------------------------
- Seq Scan on users  (cost=0.00..1.62 rows=1 width=78) (actual time=0.008..0.011 rows=1.00 loops=1)
-   Filter: ((user_email)::text = 'user1@kalpa.app'::text)
-   Rows Removed by Filter: 49
-   Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=89
- Planning Time: 0.436 ms
- Execution Time: 0.040 ms
-(8 rows)
+BEGIN (rolled back after EXPLAIN)
+Index Scan using users_user_email_key on public.users  (cost=0.14..8.16 rows=1 width=303) (actual time=0.002..0.003 rows=1.00 loops=1)
+  Output: user_id, user_name, user_email, avatar_url, created_at
+  Index Cond: ((users.user_email)::text = 'user1@kalpa.app'::text)
+  Index Searches: 1
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=82
+Planning Time: 0.118 ms
+Execution Time: 0.015 ms
+ROLLBACK

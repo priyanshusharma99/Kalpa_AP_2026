@@ -8,58 +8,49 @@ VALUES ('usr_benchmark', 'Bench User', 'benchmark@kalpa.app', 'https://avatar.ir
 ON CONFLICT (user_email) DO NOTHING;
 
 --- RUN 1 ---
-BEGIN
-                                           QUERY PLAN                                           
-------------------------------------------------------------------------------------------------
- Insert on users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.451..0.451 rows=0.00 loops=1)
-   Conflict Resolution: NOTHING
-   Conflict Arbiter Indexes: users_user_email_key
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=32
-   ->  Result  (cost=0.00..0.01 rows=1 width=928) (actual time=0.004..0.004 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=45
- Planning Time: 0.127 ms
- Execution Time: 0.472 ms
-(11 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.116..0.117 rows=0.00 loops=1)
+  Conflict Resolution: NOTHING
+  Conflict Arbiter Indexes: users_user_email_key
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=29
+  ->  Result  (cost=0.00..0.01 rows=1 width=311) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'usr_benchmark'::character varying(64), 'Bench User'::character varying(100), 'benchmark@kalpa.app'::character varying(255), 'https://avatar.iran.liara.run/public/99'::text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=45
+Planning Time: 0.051 ms
+Execution Time: 0.125 ms
 ROLLBACK
 
 --- RUN 2 ---
-BEGIN
-                                           QUERY PLAN                                           
-------------------------------------------------------------------------------------------------
- Insert on users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.390..0.390 rows=0.00 loops=1)
-   Conflict Resolution: NOTHING
-   Conflict Arbiter Indexes: users_user_email_key
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=32
-   ->  Result  (cost=0.00..0.01 rows=1 width=928) (actual time=0.004..0.005 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=45
- Planning Time: 0.129 ms
- Execution Time: 0.411 ms
-(11 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.092..0.093 rows=0.00 loops=1)
+  Conflict Resolution: NOTHING
+  Conflict Arbiter Indexes: users_user_email_key
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=29
+  ->  Result  (cost=0.00..0.01 rows=1 width=311) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'usr_benchmark'::character varying(64), 'Bench User'::character varying(100), 'benchmark@kalpa.app'::character varying(255), 'https://avatar.iran.liara.run/public/99'::text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=45
+Planning Time: 0.045 ms
+Execution Time: 0.100 ms
 ROLLBACK
 
 --- RUN 3 ---
-BEGIN
-                                           QUERY PLAN                                           
-------------------------------------------------------------------------------------------------
- Insert on users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.353..0.354 rows=0.00 loops=1)
-   Conflict Resolution: NOTHING
-   Conflict Arbiter Indexes: users_user_email_key
-   Tuples Inserted: 1
-   Conflicting Tuples: 0
-   Buffers: shared hit=32
-   ->  Result  (cost=0.00..0.01 rows=1 width=928) (actual time=0.003..0.003 rows=1.00 loops=1)
- Planning:
-   Buffers: shared hit=45
- Planning Time: 0.132 ms
- Execution Time: 0.373 ms
-(11 rows)
-
+BEGIN (rolled back after EXPLAIN)
+Insert on public.users  (cost=0.00..0.01 rows=0 width=0) (actual time=0.098..0.098 rows=0.00 loops=1)
+  Conflict Resolution: NOTHING
+  Conflict Arbiter Indexes: users_user_email_key
+  Tuples Inserted: 1
+  Conflicting Tuples: 0
+  Buffers: shared hit=29
+  ->  Result  (cost=0.00..0.01 rows=1 width=311) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: 'usr_benchmark'::character varying(64), 'Bench User'::character varying(100), 'benchmark@kalpa.app'::character varying(255), 'https://avatar.iran.liara.run/public/99'::text, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+Planning:
+  Buffers: shared hit=45
+Planning Time: 0.046 ms
+Execution Time: 0.106 ms
 ROLLBACK

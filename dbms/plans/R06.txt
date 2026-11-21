@@ -10,52 +10,67 @@ JOIN role_permissions rp ON pc.role_name = rp.role_name
 WHERE pc.project_id = 'proj_001' AND pc.user_id = 'usr_001';
 
 --- RUN 1 ---
-QUERY PLAN                                                         
-----------------------------------------------------------------------------------------------------------------------------
- Nested Loop  (cost=0.00..5.32 rows=1 width=26) (actual time=0.024..0.024 rows=0.00 loops=1)
-   Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-   Buffers: shared hit=2
-   ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=1 width=23) (actual time=0.024..0.024 rows=0.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((user_id)::text = 'usr_001'::text))
-         Rows Removed by Filter: 150
-         Buffers: shared hit=2
-   ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=9) (never executed)
- Planning:
-   Buffers: shared hit=238
- Planning Time: 0.920 ms
- Execution Time: 0.055 ms
-(12 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop  (cost=0.30..16.35 rows=1 width=137) (actual time=0.004..0.006 rows=1.00 loops=1)
+  Output: pc.project_id, pc.user_id, pc.role_name, rp.can_edit, rp.can_comment, rp.can_share
+  Inner Unique: true
+  Buffers: shared hit=5
+  ->  Index Scan using project_collaborators_pkey on public.project_collaborators pc  (cost=0.15..8.17 rows=1 width=134) (actual time=0.002..0.003 rows=1.00 loops=1)
+        Output: pc.project_id, pc.user_id, pc.role_name, pc.joined_at
+        Index Cond: (((pc.project_id)::text = 'proj_001'::text) AND ((pc.user_id)::text = 'usr_001'::text))
+        Index Searches: 1
+        Buffers: shared hit=3
+  ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=37) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+        Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=219
+Planning Time: 0.267 ms
+Execution Time: 0.022 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                         
-----------------------------------------------------------------------------------------------------------------------------
- Nested Loop  (cost=0.00..5.32 rows=1 width=26) (actual time=0.032..0.032 rows=0.00 loops=1)
-   Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-   Buffers: shared hit=2
-   ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=1 width=23) (actual time=0.031..0.032 rows=0.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((user_id)::text = 'usr_001'::text))
-         Rows Removed by Filter: 150
-         Buffers: shared hit=2
-   ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=9) (never executed)
- Planning:
-   Buffers: shared hit=238
- Planning Time: 1.100 ms
- Execution Time: 0.071 ms
-(12 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop  (cost=0.30..16.35 rows=1 width=137) (actual time=0.004..0.005 rows=1.00 loops=1)
+  Output: pc.project_id, pc.user_id, pc.role_name, rp.can_edit, rp.can_comment, rp.can_share
+  Inner Unique: true
+  Buffers: shared hit=4
+  ->  Index Scan using project_collaborators_pkey on public.project_collaborators pc  (cost=0.15..8.17 rows=1 width=134) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: pc.project_id, pc.user_id, pc.role_name, pc.joined_at
+        Index Cond: (((pc.project_id)::text = 'proj_001'::text) AND ((pc.user_id)::text = 'usr_001'::text))
+        Index Searches: 1
+        Buffers: shared hit=2
+  ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=37) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+        Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=219
+Planning Time: 0.258 ms
+Execution Time: 0.020 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                         
-----------------------------------------------------------------------------------------------------------------------------
- Nested Loop  (cost=0.00..5.32 rows=1 width=26) (actual time=0.031..0.031 rows=0.00 loops=1)
-   Join Filter: ((rp.role_name)::text = (pc.role_name)::text)
-   Buffers: shared hit=2
-   ->  Seq Scan on project_collaborators pc  (cost=0.00..4.25 rows=1 width=23) (actual time=0.030..0.030 rows=0.00 loops=1)
-         Filter: (((project_id)::text = 'proj_001'::text) AND ((user_id)::text = 'usr_001'::text))
-         Rows Removed by Filter: 150
-         Buffers: shared hit=2
-   ->  Seq Scan on role_permissions rp  (cost=0.00..1.03 rows=3 width=9) (never executed)
- Planning:
-   Buffers: shared hit=238
- Planning Time: 1.034 ms
- Execution Time: 0.065 ms
-(12 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop  (cost=0.30..16.35 rows=1 width=137) (actual time=0.004..0.005 rows=1.00 loops=1)
+  Output: pc.project_id, pc.user_id, pc.role_name, rp.can_edit, rp.can_comment, rp.can_share
+  Inner Unique: true
+  Buffers: shared hit=4
+  ->  Index Scan using project_collaborators_pkey on public.project_collaborators pc  (cost=0.15..8.17 rows=1 width=134) (actual time=0.002..0.002 rows=1.00 loops=1)
+        Output: pc.project_id, pc.user_id, pc.role_name, pc.joined_at
+        Index Cond: (((pc.project_id)::text = 'proj_001'::text) AND ((pc.user_id)::text = 'usr_001'::text))
+        Index Searches: 1
+        Buffers: shared hit=2
+  ->  Index Scan using role_permissions_pkey on public.role_permissions rp  (cost=0.15..8.17 rows=1 width=37) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: rp.role_name, rp.access_level_desc, rp.can_edit, rp.can_comment, rp.can_share
+        Index Cond: ((rp.role_name)::text = (pc.role_name)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=219
+Planning Time: 0.268 ms
+Execution Time: 0.020 ms
+ROLLBACK

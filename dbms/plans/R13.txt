@@ -14,112 +14,163 @@ GROUP BY cp.comment_id, u.user_id
 ORDER BY cp.created_at ASC;
 
 --- RUN 1 ---
-QUERY PLAN                                                                 
---------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=12.97..13.00 rows=10 width=96) (actual time=0.133..0.134 rows=4.00 loops=1)
-   Sort Key: cp.created_at
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=10
-   ->  HashAggregate  (cost=12.70..12.80 rows=10 width=96) (actual time=0.117..0.119 rows=4.00 loops=1)
-         Group Key: cp.comment_id, u.user_id
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=7
-         ->  Hash Left Join  (cost=5.42..12.63 rows=10 width=96) (actual time=0.061..0.105 rows=10.00 loops=1)
-               Hash Cond: ((cp.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=7
-               ->  Hash Right Join  (cost=3.30..10.48 rows=10 width=50) (actual time=0.035..0.077 rows=10.00 loops=1)
-                     Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
-                     Buffers: shared hit=6
-                     ->  Seq Scan on comment_replies cr  (cost=0.00..6.50 rows=250 width=17) (actual time=0.003..0.022 rows=250.00 loops=1)
-                           Buffers: shared hit=4
-                     ->  Hash  (cost=3.25..3.25 rows=4 width=42) (actual time=0.021..0.021 rows=4.00 loops=1)
-                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                           Buffers: shared hit=2
-                           ->  Seq Scan on comment_pins cp  (cost=0.00..3.25 rows=4 width=42) (actual time=0.010..0.016 rows=4.00 loops=1)
-                                 Filter: ((project_id)::text = 'proj_001'::text)
-                                 Rows Removed by Filter: 96
-                                 Buffers: shared hit=2
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.019..0.019 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.005..0.010 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=283
- Planning Time: 1.598 ms
- Execution Time: 0.264 ms
-(32 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=37.62..37.62 rows=2 width=272) (actual time=0.050..0.051 rows=5.00 loops=1)
+  Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, (count(cr.reply_id))
+  Sort Key: cp.created_at
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=10
+  ->  GroupAggregate  (cost=37.57..37.61 rows=2 width=272) (actual time=0.039..0.040 rows=5.00 loops=1)
+        Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, count(cr.reply_id)
+        Group Key: cp.comment_id, u.user_id
+        Buffers: shared hit=7
+        ->  Sort  (cost=37.57..37.57 rows=2 width=314) (actual time=0.034..0.035 rows=8.00 loops=1)
+              Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+              Sort Key: cp.comment_id, u.user_id
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=7
+              ->  Hash Right Join  (cost=24.24..37.56 rows=2 width=314) (actual time=0.021..0.027 rows=8.00 loops=1)
+                    Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+                    Hash Cond: ((u.user_id)::text = (cp.creator_id)::text)
+                    Buffers: shared hit=4
+                    ->  Seq Scan on public.users u  (cost=0.00..12.40 rows=240 width=150) (actual time=0.002..0.003 rows=50.00 loops=1)
+                          Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=24.21..24.21 rows=2 width=214) (actual time=0.017..0.017 rows=8.00 loops=1)
+                          Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=3
+                          ->  Hash Right Join  (cost=9.53..24.21 rows=2 width=214) (actual time=0.012..0.015 rows=8.00 loops=1)
+                                Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                                Inner Unique: true
+                                Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
+                                Buffers: shared hit=3
+                                ->  Seq Scan on public.comment_replies cr  (cost=0.00..13.70 rows=370 width=100) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                      Output: cr.reply_id, cr.comment_id, cr.author_id, cr.message_text, cr.created_at
+                                      Buffers: shared hit=1
+                                ->  Hash  (cost=9.50..9.50 rows=2 width=164) (actual time=0.007..0.007 rows=5.00 loops=1)
+                                      Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      Buffers: shared hit=2
+                                      ->  Bitmap Heap Scan on public.comment_pins cp  (cost=4.16..9.50 rows=2 width=164) (actual time=0.005..0.005 rows=5.00 loops=1)
+                                            Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                            Recheck Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                            Heap Blocks: exact=1
+                                            Buffers: shared hit=2
+                                            ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                                  Index Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                                  Index Searches: 1
+                                                  Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=266
+Planning Time: 0.355 ms
+Execution Time: 0.080 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                 
---------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=12.97..13.00 rows=10 width=96) (actual time=0.129..0.130 rows=4.00 loops=1)
-   Sort Key: cp.created_at
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=10
-   ->  HashAggregate  (cost=12.70..12.80 rows=10 width=96) (actual time=0.113..0.114 rows=4.00 loops=1)
-         Group Key: cp.comment_id, u.user_id
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=7
-         ->  Hash Left Join  (cost=5.42..12.63 rows=10 width=96) (actual time=0.062..0.102 rows=10.00 loops=1)
-               Hash Cond: ((cp.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=7
-               ->  Hash Right Join  (cost=3.30..10.48 rows=10 width=50) (actual time=0.037..0.075 rows=10.00 loops=1)
-                     Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
-                     Buffers: shared hit=6
-                     ->  Seq Scan on comment_replies cr  (cost=0.00..6.50 rows=250 width=17) (actual time=0.003..0.020 rows=250.00 loops=1)
-                           Buffers: shared hit=4
-                     ->  Hash  (cost=3.25..3.25 rows=4 width=42) (actual time=0.021..0.022 rows=4.00 loops=1)
-                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                           Buffers: shared hit=2
-                           ->  Seq Scan on comment_pins cp  (cost=0.00..3.25 rows=4 width=42) (actual time=0.010..0.016 rows=4.00 loops=1)
-                                 Filter: ((project_id)::text = 'proj_001'::text)
-                                 Rows Removed by Filter: 96
-                                 Buffers: shared hit=2
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.019..0.019 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.006..0.010 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=283
- Planning Time: 1.336 ms
- Execution Time: 0.248 ms
-(32 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=37.62..37.62 rows=2 width=272) (actual time=0.049..0.050 rows=5.00 loops=1)
+  Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, (count(cr.reply_id))
+  Sort Key: cp.created_at
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=10
+  ->  GroupAggregate  (cost=37.57..37.61 rows=2 width=272) (actual time=0.037..0.039 rows=5.00 loops=1)
+        Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, count(cr.reply_id)
+        Group Key: cp.comment_id, u.user_id
+        Buffers: shared hit=7
+        ->  Sort  (cost=37.57..37.57 rows=2 width=314) (actual time=0.034..0.034 rows=8.00 loops=1)
+              Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+              Sort Key: cp.comment_id, u.user_id
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=7
+              ->  Hash Right Join  (cost=24.24..37.56 rows=2 width=314) (actual time=0.021..0.026 rows=8.00 loops=1)
+                    Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+                    Hash Cond: ((u.user_id)::text = (cp.creator_id)::text)
+                    Buffers: shared hit=4
+                    ->  Seq Scan on public.users u  (cost=0.00..12.40 rows=240 width=150) (actual time=0.002..0.003 rows=50.00 loops=1)
+                          Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=24.21..24.21 rows=2 width=214) (actual time=0.017..0.017 rows=8.00 loops=1)
+                          Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=3
+                          ->  Hash Right Join  (cost=9.53..24.21 rows=2 width=214) (actual time=0.012..0.015 rows=8.00 loops=1)
+                                Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                                Inner Unique: true
+                                Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
+                                Buffers: shared hit=3
+                                ->  Seq Scan on public.comment_replies cr  (cost=0.00..13.70 rows=370 width=100) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                      Output: cr.reply_id, cr.comment_id, cr.author_id, cr.message_text, cr.created_at
+                                      Buffers: shared hit=1
+                                ->  Hash  (cost=9.50..9.50 rows=2 width=164) (actual time=0.007..0.007 rows=5.00 loops=1)
+                                      Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      Buffers: shared hit=2
+                                      ->  Bitmap Heap Scan on public.comment_pins cp  (cost=4.16..9.50 rows=2 width=164) (actual time=0.005..0.005 rows=5.00 loops=1)
+                                            Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                            Recheck Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                            Heap Blocks: exact=1
+                                            Buffers: shared hit=2
+                                            ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                                  Index Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                                  Index Searches: 1
+                                                  Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=266
+Planning Time: 0.327 ms
+Execution Time: 0.077 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                 
---------------------------------------------------------------------------------------------------------------------------------------------
- Sort  (cost=12.97..13.00 rows=10 width=96) (actual time=0.084..0.085 rows=4.00 loops=1)
-   Sort Key: cp.created_at
-   Sort Method: quicksort  Memory: 25kB
-   Buffers: shared hit=10
-   ->  HashAggregate  (cost=12.70..12.80 rows=10 width=96) (actual time=0.076..0.077 rows=4.00 loops=1)
-         Group Key: cp.comment_id, u.user_id
-         Batches: 1  Memory Usage: 32kB
-         Buffers: shared hit=7
-         ->  Hash Left Join  (cost=5.42..12.63 rows=10 width=96) (actual time=0.049..0.071 rows=10.00 loops=1)
-               Hash Cond: ((cp.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=7
-               ->  Hash Right Join  (cost=3.30..10.48 rows=10 width=50) (actual time=0.032..0.054 rows=10.00 loops=1)
-                     Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
-                     Buffers: shared hit=6
-                     ->  Seq Scan on comment_replies cr  (cost=0.00..6.50 rows=250 width=17) (actual time=0.002..0.009 rows=250.00 loops=1)
-                           Buffers: shared hit=4
-                     ->  Hash  (cost=3.25..3.25 rows=4 width=42) (actual time=0.024..0.024 rows=4.00 loops=1)
-                           Buckets: 1024  Batches: 1  Memory Usage: 9kB
-                           Buffers: shared hit=2
-                           ->  Seq Scan on comment_pins cp  (cost=0.00..3.25 rows=4 width=42) (actual time=0.006..0.010 rows=4.00 loops=1)
-                                 Filter: ((project_id)::text = 'proj_001'::text)
-                                 Rows Removed by Filter: 96
-                                 Buffers: shared hit=2
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.013..0.013 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.006..0.009 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=283
- Planning Time: 0.853 ms
- Execution Time: 0.125 ms
-(32 rows)
+BEGIN (rolled back after EXPLAIN)
+Sort  (cost=37.62..37.62 rows=2 width=272) (actual time=0.047..0.048 rows=5.00 loops=1)
+  Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, (count(cr.reply_id))
+  Sort Key: cp.created_at
+  Sort Method: quicksort  Memory: 25kB
+  Buffers: shared hit=10
+  ->  GroupAggregate  (cost=37.57..37.61 rows=2 width=272) (actual time=0.036..0.038 rows=5.00 loops=1)
+        Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_id, u.user_name, u.avatar_url, count(cr.reply_id)
+        Group Key: cp.comment_id, u.user_id
+        Buffers: shared hit=7
+        ->  Sort  (cost=37.57..37.57 rows=2 width=314) (actual time=0.033..0.033 rows=8.00 loops=1)
+              Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+              Sort Key: cp.comment_id, u.user_id
+              Sort Method: quicksort  Memory: 26kB
+              Buffers: shared hit=7
+              ->  Hash Right Join  (cost=24.24..37.56 rows=2 width=314) (actual time=0.020..0.025 rows=8.00 loops=1)
+                    Output: cp.comment_id, u.user_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, u.user_name, u.avatar_url, cr.reply_id
+                    Hash Cond: ((u.user_id)::text = (cp.creator_id)::text)
+                    Buffers: shared hit=4
+                    ->  Seq Scan on public.users u  (cost=0.00..12.40 rows=240 width=150) (actual time=0.002..0.003 rows=50.00 loops=1)
+                          Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                          Buffers: shared hit=1
+                    ->  Hash  (cost=24.21..24.21 rows=2 width=214) (actual time=0.016..0.016 rows=8.00 loops=1)
+                          Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          Buffers: shared hit=3
+                          ->  Hash Right Join  (cost=9.53..24.21 rows=2 width=214) (actual time=0.011..0.014 rows=8.00 loops=1)
+                                Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id, cr.reply_id
+                                Inner Unique: true
+                                Hash Cond: ((cr.comment_id)::text = (cp.comment_id)::text)
+                                Buffers: shared hit=3
+                                ->  Seq Scan on public.comment_replies cr  (cost=0.00..13.70 rows=370 width=100) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                      Output: cr.reply_id, cr.comment_id, cr.author_id, cr.message_text, cr.created_at
+                                      Buffers: shared hit=1
+                                ->  Hash  (cost=9.50..9.50 rows=2 width=164) (actual time=0.006..0.006 rows=5.00 loops=1)
+                                      Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      Buffers: shared hit=2
+                                      ->  Bitmap Heap Scan on public.comment_pins cp  (cost=4.16..9.50 rows=2 width=164) (actual time=0.004..0.005 rows=5.00 loops=1)
+                                            Output: cp.comment_id, cp.pin_x, cp.pin_y, cp.status, cp.created_at, cp.creator_id
+                                            Recheck Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                            Heap Blocks: exact=1
+                                            Buffers: shared hit=2
+                                            ->  Bitmap Index Scan on idx_comments_project  (cost=0.00..4.16 rows=2 width=0) (actual time=0.001..0.001 rows=8.00 loops=1)
+                                                  Index Cond: ((cp.project_id)::text = 'proj_001'::text)
+                                                  Index Searches: 1
+                                                  Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=266
+Planning Time: 0.325 ms
+Execution Time: 0.076 ms
+ROLLBACK

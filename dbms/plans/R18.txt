@@ -1,105 +1,102 @@
 Query ID: R18
 Type: READ
-Description: Audit trail — recent canvas modifications and editor details
+Description: Recent canvas elements with original creator details
 
 SQL:
 SELECT e.element_id, e.shape_type, e.updated_at,
-       u.user_name AS modifier_name, u.avatar_url
+       u.user_name AS creator_name, u.avatar_url
 FROM canvas_elements e
 LEFT JOIN users u ON e.creator_id = u.user_id
 WHERE e.project_id = 'proj_001'
-ORDER BY e.updated_at DESC
+ORDER BY e.updated_at DESC, e.element_id
 LIMIT 20;
 
 --- RUN 1 ---
-QUERY PLAN                                                                     
-----------------------------------------------------------------------------------------------------------------------------------------------------
- Limit  (cost=29.71..29.76 rows=20 width=70) (actual time=0.168..0.171 rows=20.00 loops=1)
-   Buffers: shared hit=26
-   ->  Sort  (cost=29.71..29.80 rows=34 width=70) (actual time=0.166..0.168 rows=20.00 loops=1)
-         Sort Key: e.updated_at DESC
-         Sort Method: quicksort  Memory: 29kB
-         Buffers: shared hit=26
-         ->  Hash Left Join  (cost=6.54..28.85 rows=34 width=70) (actual time=0.061..0.131 rows=32.00 loops=1)
-               Hash Cond: ((e.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=23
-               ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=32) (actual time=0.021..0.072 rows=32.00 loops=1)
-                     Recheck Cond: ((project_id)::text = 'proj_001'::text)
-                     Heap Blocks: exact=21
-                     Buffers: shared hit=22
-                     ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.010..0.010 rows=33.00 loops=1)
-                           Index Cond: ((project_id)::text = 'proj_001'::text)
-                           Index Searches: 1
-                           Buffers: shared hit=1
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.030..0.030 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.006..0.013 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=320
- Planning Time: 1.316 ms
- Execution Time: 0.231 ms
-(26 rows)
+BEGIN (rolled back after EXPLAIN)
+Limit  (cost=9.75..9.76 rows=1 width=192) (actual time=0.034..0.036 rows=20.00 loops=1)
+  Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+  Buffers: shared hit=77
+  ->  Sort  (cost=9.75..9.76 rows=1 width=192) (actual time=0.034..0.034 rows=20.00 loops=1)
+        Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+        Sort Key: e.updated_at DESC, e.element_id
+        Sort Method: quicksort  Memory: 29kB
+        Buffers: shared hit=77
+        ->  Nested Loop Left Join  (cost=0.14..9.74 rows=1 width=192) (actual time=0.005..0.021 rows=35.00 loops=1)
+              Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=71
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=142) (actual time=0.002..0.005 rows=35.00 loops=1)
+                    Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=150) (actual time=0.000..0.000 rows=1.00 loops=35)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+                    Index Searches: 35
+                    Buffers: shared hit=70
+Planning:
+  Buffers: shared hit=290
+Planning Time: 0.342 ms
+Execution Time: 0.048 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                     
-----------------------------------------------------------------------------------------------------------------------------------------------------
- Limit  (cost=29.71..29.76 rows=20 width=70) (actual time=0.134..0.138 rows=20.00 loops=1)
-   Buffers: shared hit=26
-   ->  Sort  (cost=29.71..29.80 rows=34 width=70) (actual time=0.133..0.136 rows=20.00 loops=1)
-         Sort Key: e.updated_at DESC
-         Sort Method: quicksort  Memory: 29kB
-         Buffers: shared hit=26
-         ->  Hash Left Join  (cost=6.54..28.85 rows=34 width=70) (actual time=0.047..0.103 rows=32.00 loops=1)
-               Hash Cond: ((e.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=23
-               ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=32) (actual time=0.015..0.058 rows=32.00 loops=1)
-                     Recheck Cond: ((project_id)::text = 'proj_001'::text)
-                     Heap Blocks: exact=21
-                     Buffers: shared hit=22
-                     ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.007..0.008 rows=33.00 loops=1)
-                           Index Cond: ((project_id)::text = 'proj_001'::text)
-                           Index Searches: 1
-                           Buffers: shared hit=1
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.025..0.025 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.011 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=320
- Planning Time: 1.245 ms
- Execution Time: 0.194 ms
-(26 rows)
+BEGIN (rolled back after EXPLAIN)
+Limit  (cost=9.75..9.76 rows=1 width=192) (actual time=0.034..0.035 rows=20.00 loops=1)
+  Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+  Buffers: shared hit=77
+  ->  Sort  (cost=9.75..9.76 rows=1 width=192) (actual time=0.033..0.034 rows=20.00 loops=1)
+        Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+        Sort Key: e.updated_at DESC, e.element_id
+        Sort Method: quicksort  Memory: 29kB
+        Buffers: shared hit=77
+        ->  Nested Loop Left Join  (cost=0.14..9.74 rows=1 width=192) (actual time=0.005..0.021 rows=35.00 loops=1)
+              Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=71
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=142) (actual time=0.003..0.005 rows=35.00 loops=1)
+                    Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=150) (actual time=0.000..0.000 rows=1.00 loops=35)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+                    Index Searches: 35
+                    Buffers: shared hit=70
+Planning:
+  Buffers: shared hit=290
+Planning Time: 0.347 ms
+Execution Time: 0.049 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                     
-----------------------------------------------------------------------------------------------------------------------------------------------------
- Limit  (cost=29.71..29.76 rows=20 width=70) (actual time=0.140..0.144 rows=20.00 loops=1)
-   Buffers: shared hit=26
-   ->  Sort  (cost=29.71..29.80 rows=34 width=70) (actual time=0.140..0.142 rows=20.00 loops=1)
-         Sort Key: e.updated_at DESC
-         Sort Method: quicksort  Memory: 29kB
-         Buffers: shared hit=26
-         ->  Hash Left Join  (cost=6.54..28.85 rows=34 width=70) (actual time=0.051..0.113 rows=32.00 loops=1)
-               Hash Cond: ((e.creator_id)::text = (u.user_id)::text)
-               Buffers: shared hit=23
-               ->  Bitmap Heap Scan on canvas_elements e  (cost=4.41..26.62 rows=34 width=32) (actual time=0.017..0.064 rows=32.00 loops=1)
-                     Recheck Cond: ((project_id)::text = 'proj_001'::text)
-                     Heap Blocks: exact=21
-                     Buffers: shared hit=22
-                     ->  Bitmap Index Scan on idx_elements_z_index  (cost=0.00..4.41 rows=34 width=0) (actual time=0.008..0.008 rows=33.00 loops=1)
-                           Index Cond: ((project_id)::text = 'proj_001'::text)
-                           Index Searches: 1
-                           Buffers: shared hit=1
-               ->  Hash  (cost=1.50..1.50 rows=50 width=54) (actual time=0.025..0.025 rows=50.00 loops=1)
-                     Buckets: 1024  Batches: 1  Memory Usage: 13kB
-                     Buffers: shared hit=1
-                     ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=54) (actual time=0.004..0.010 rows=50.00 loops=1)
-                           Buffers: shared hit=1
- Planning:
-   Buffers: shared hit=320
- Planning Time: 1.256 ms
- Execution Time: 0.199 ms
-(26 rows)
+BEGIN (rolled back after EXPLAIN)
+Limit  (cost=9.75..9.76 rows=1 width=192) (actual time=0.032..0.034 rows=20.00 loops=1)
+  Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+  Buffers: shared hit=77
+  ->  Sort  (cost=9.75..9.76 rows=1 width=192) (actual time=0.032..0.033 rows=20.00 loops=1)
+        Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+        Sort Key: e.updated_at DESC, e.element_id
+        Sort Method: quicksort  Memory: 29kB
+        Buffers: shared hit=77
+        ->  Nested Loop Left Join  (cost=0.14..9.74 rows=1 width=192) (actual time=0.004..0.019 rows=35.00 loops=1)
+              Output: e.element_id, e.shape_type, e.updated_at, u.user_name, u.avatar_url
+              Inner Unique: true
+              Buffers: shared hit=71
+              ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.51 rows=1 width=142) (actual time=0.002..0.005 rows=35.00 loops=1)
+                    Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+                    Filter: ((e.project_id)::text = 'proj_001'::text)
+                    Rows Removed by Filter: 6
+                    Buffers: shared hit=1
+              ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=150) (actual time=0.000..0.000 rows=1.00 loops=35)
+                    Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+                    Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+                    Index Searches: 35
+                    Buffers: shared hit=70
+Planning:
+  Buffers: shared hit=290
+Planning Time: 0.327 ms
+Execution Time: 0.047 ms
+ROLLBACK

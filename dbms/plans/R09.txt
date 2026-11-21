@@ -12,67 +12,67 @@ LEFT JOIN users u ON e.creator_id = u.user_id
 WHERE e.project_id = 'proj_001' AND e.element_id = 'elem_0026';
 
 --- RUN 1 ---
-QUERY PLAN                                                                        
----------------------------------------------------------------------------------------------------------------------------------------------------------
- Hash Right Join  (cost=8.31..9.95 rows=1 width=200) (actual time=0.021..0.022 rows=0.00 loops=1)
-   Hash Cond: ((u.user_id)::text = (e.creator_id)::text)
-   Buffers: shared hit=3
-   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (never executed)
-   ->  Hash  (cost=8.29..8.29 rows=1 width=201) (actual time=0.016..0.017 rows=0.00 loops=1)
-         Buckets: 1024  Batches: 1  Memory Usage: 8kB
-         Buffers: shared hit=3
-         ->  Index Scan using canvas_elements_pkey on canvas_elements e  (cost=0.28..8.29 rows=1 width=201) (actual time=0.016..0.016 rows=0.00 loops=1)
-               Index Cond: ((element_id)::text = 'elem_0026'::text)
-               Filter: ((project_id)::text = 'proj_001'::text)
-               Rows Removed by Filter: 1
-               Index Searches: 1
-               Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=354
- Planning Time: 1.270 ms
- Execution Time: 0.076 ms
-(17 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop Left Join  (cost=0.14..9.84 rows=1 width=512) (actual time=0.006..0.007 rows=1.00 loops=1)
+  Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.created_at, e.updated_at, u.user_name
+  Inner Unique: true
+  Buffers: shared hit=3
+  ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.61 rows=1 width=494) (actual time=0.004..0.005 rows=1.00 loops=1)
+        Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+        Filter: (((e.project_id)::text = 'proj_001'::text) AND ((e.element_id)::text = 'elem_0026'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=1
+  ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=118) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+        Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=322
+Planning Time: 0.337 ms
+Execution Time: 0.024 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                        
----------------------------------------------------------------------------------------------------------------------------------------------------------
- Hash Right Join  (cost=8.31..9.95 rows=1 width=200) (actual time=0.023..0.024 rows=0.00 loops=1)
-   Hash Cond: ((u.user_id)::text = (e.creator_id)::text)
-   Buffers: shared hit=3
-   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (never executed)
-   ->  Hash  (cost=8.29..8.29 rows=1 width=201) (actual time=0.020..0.020 rows=0.00 loops=1)
-         Buckets: 1024  Batches: 1  Memory Usage: 8kB
-         Buffers: shared hit=3
-         ->  Index Scan using canvas_elements_pkey on canvas_elements e  (cost=0.28..8.29 rows=1 width=201) (actual time=0.020..0.020 rows=0.00 loops=1)
-               Index Cond: ((element_id)::text = 'elem_0026'::text)
-               Filter: ((project_id)::text = 'proj_001'::text)
-               Rows Removed by Filter: 1
-               Index Searches: 1
-               Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=354
- Planning Time: 1.169 ms
- Execution Time: 0.061 ms
-(17 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop Left Join  (cost=0.14..9.84 rows=1 width=512) (actual time=0.008..0.009 rows=1.00 loops=1)
+  Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.created_at, e.updated_at, u.user_name
+  Inner Unique: true
+  Buffers: shared hit=3
+  ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.61 rows=1 width=494) (actual time=0.006..0.007 rows=1.00 loops=1)
+        Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+        Filter: (((e.project_id)::text = 'proj_001'::text) AND ((e.element_id)::text = 'elem_0026'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=1
+  ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=118) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+        Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=322
+Planning Time: 0.303 ms
+Execution Time: 0.024 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                        
----------------------------------------------------------------------------------------------------------------------------------------------------------
- Hash Right Join  (cost=8.31..9.95 rows=1 width=200) (actual time=0.019..0.020 rows=0.00 loops=1)
-   Hash Cond: ((u.user_id)::text = (e.creator_id)::text)
-   Buffers: shared hit=3
-   ->  Seq Scan on users u  (cost=0.00..1.50 rows=50 width=15) (never executed)
-   ->  Hash  (cost=8.29..8.29 rows=1 width=201) (actual time=0.015..0.015 rows=0.00 loops=1)
-         Buckets: 1024  Batches: 1  Memory Usage: 8kB
-         Buffers: shared hit=3
-         ->  Index Scan using canvas_elements_pkey on canvas_elements e  (cost=0.28..8.29 rows=1 width=201) (actual time=0.014..0.014 rows=0.00 loops=1)
-               Index Cond: ((element_id)::text = 'elem_0026'::text)
-               Filter: ((project_id)::text = 'proj_001'::text)
-               Rows Removed by Filter: 1
-               Index Searches: 1
-               Buffers: shared hit=3
- Planning:
-   Buffers: shared hit=354
- Planning Time: 1.276 ms
- Execution Time: 0.075 ms
-(17 rows)
+BEGIN (rolled back after EXPLAIN)
+Nested Loop Left Join  (cost=0.14..9.84 rows=1 width=512) (actual time=0.007..0.008 rows=1.00 loops=1)
+  Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.created_at, e.updated_at, u.user_name
+  Inner Unique: true
+  Buffers: shared hit=3
+  ->  Seq Scan on public.canvas_elements e  (cost=0.00..1.61 rows=1 width=494) (actual time=0.005..0.005 rows=1.00 loops=1)
+        Output: e.element_id, e.project_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.opacity, e.fill_color, e.stroke_color, e.stroke_width, e.z_index, e.text_content, e.image_url, e.custom_properties, e.creator_id, e.created_at, e.updated_at
+        Filter: (((e.project_id)::text = 'proj_001'::text) AND ((e.element_id)::text = 'elem_0026'::text))
+        Rows Removed by Filter: 40
+        Buffers: shared hit=1
+  ->  Index Scan using users_pkey on public.users u  (cost=0.14..8.16 rows=1 width=118) (actual time=0.001..0.001 rows=1.00 loops=1)
+        Output: u.user_id, u.user_name, u.user_email, u.avatar_url, u.created_at, u.updated_at
+        Index Cond: ((u.user_id)::text = (e.creator_id)::text)
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=322
+Planning Time: 0.371 ms
+Execution Time: 0.027 ms
+ROLLBACK

@@ -1,55 +1,87 @@
 Query ID: A01
 Type: READ
-Description: Spatial Viewport Culling (2D Bounding Box Intersection)
+Description: Spatial Viewport Culling (transformed axis-aligned bounds)
 
 SQL:
-SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.z_index
-FROM canvas_elements e
-WHERE e.project_id = 'proj_001'
-  AND e.pos_x <= 1920.00
-  AND (e.pos_x + e.width) >= 0.00
-  AND e.pos_y <= 1080.00
-  AND (e.pos_y + e.height) >= 0.00
-ORDER BY e.z_index ASC;
+WITH transformed_bounds AS (
+    SELECT e.*,
+           ABS(COS(RADIANS(e.rotation::double precision))) AS abs_cos,
+           ABS(SIN(RADIANS(e.rotation::double precision))) AS abs_sin,
+           (e.width + e.stroke_width) * e.scale_x / 2.0 AS half_width,
+           (e.height + e.stroke_width) * e.scale_y / 2.0 AS half_height
+    FROM canvas_elements e
+    WHERE e.project_id = 'proj_001'
+), bounds AS (
+    SELECT t.*,
+           half_width * abs_cos + half_height * abs_sin AS extent_x,
+           half_width * abs_sin + half_height * abs_cos AS extent_y
+    FROM transformed_bounds t
+)
+SELECT element_id, shape_type, pos_x, pos_y, width, height,
+       scale_x, scale_y, rotation, stroke_width, z_index
+FROM bounds
+WHERE pos_x - extent_x <= 1920.00 + 1e-8
+  AND pos_x + extent_x >= 0.00 - 1e-8
+  AND pos_y - extent_y <= 1080.00 + 1e-8
+  AND pos_y + extent_y >= 0.00 - 1e-8
+ORDER BY z_index ASC, element_id;
 
 --- RUN 1 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.18 rows=1 width=296) (actual time=0.008..0.022 rows=35.00 loops=1)
-   Index Cond: ((project_id)::text = 'proj_001'::text)
-   Filter: ((pos_x <= 1920.00) AND (pos_y <= 1080.00) AND ((pos_x + width) >= 0.00) AND ((pos_y + height) >= 0.00))
-   Index Searches: 1
-   Buffers: shared hit=5
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.275 ms
- Execution Time: 0.041 ms
-(9 rows)
+BEGIN (rolled back after EXPLAIN)
+Incremental Sort  (cost=8.39..8.43 rows=2 width=202) (actual time=0.079..0.084 rows=35.00 loops=1)
+  Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+  Sort Key: e.z_index, e.element_id
+  Presorted Key: e.z_index
+  Full-sort Groups: 2  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+  Buffers: shared hit=11
+  ->  Index Scan using idx_elements_z_index on public.canvas_elements e  (cost=0.14..8.38 rows=1 width=202) (actual time=0.009..0.066 rows=35.00 loops=1)
+        Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+        Index Cond: ((e.project_id)::text = 'proj_001'::text)
+        Filter: ((((e.pos_x)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) <= '1920.00000001'::double precision) AND (((e.pos_x)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision) AND (((e.pos_y)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) <= '1080.00000001'::double precision) AND (((e.pos_y)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision))
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=179
+Planning Time: 0.292 ms
+Execution Time: 0.100 ms
+ROLLBACK
 
 --- RUN 2 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.18 rows=1 width=296) (actual time=0.007..0.014 rows=35.00 loops=1)
-   Index Cond: ((project_id)::text = 'proj_001'::text)
-   Filter: ((pos_x <= 1920.00) AND (pos_y <= 1080.00) AND ((pos_x + width) >= 0.00) AND ((pos_y + height) >= 0.00))
-   Index Searches: 1
-   Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.249 ms
- Execution Time: 0.031 ms
-(9 rows)
+BEGIN (rolled back after EXPLAIN)
+Incremental Sort  (cost=8.39..8.43 rows=2 width=202) (actual time=0.081..0.086 rows=35.00 loops=1)
+  Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+  Sort Key: e.z_index, e.element_id
+  Presorted Key: e.z_index
+  Full-sort Groups: 2  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+  Buffers: shared hit=11
+  ->  Index Scan using idx_elements_z_index on public.canvas_elements e  (cost=0.14..8.38 rows=1 width=202) (actual time=0.009..0.068 rows=35.00 loops=1)
+        Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+        Index Cond: ((e.project_id)::text = 'proj_001'::text)
+        Filter: ((((e.pos_x)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) <= '1920.00000001'::double precision) AND (((e.pos_x)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision) AND (((e.pos_y)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) <= '1080.00000001'::double precision) AND (((e.pos_y)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision))
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=179
+Planning Time: 0.284 ms
+Execution Time: 0.102 ms
+ROLLBACK
 
 --- RUN 3 ---
-QUERY PLAN                                                                  
-----------------------------------------------------------------------------------------------------------------------------------------------
- Index Scan using idx_elements_z_index on canvas_elements e  (cost=0.14..8.18 rows=1 width=296) (actual time=0.019..0.034 rows=35.00 loops=1)
-   Index Cond: ((project_id)::text = 'proj_001'::text)
-   Filter: ((pos_x <= 1920.00) AND (pos_y <= 1080.00) AND ((pos_x + width) >= 0.00) AND ((pos_y + height) >= 0.00))
-   Index Searches: 1
-   Buffers: shared hit=2
- Planning:
-   Buffers: shared hit=178
- Planning Time: 0.401 ms
- Execution Time: 0.074 ms
-(9 rows)
+BEGIN (rolled back after EXPLAIN)
+Incremental Sort  (cost=8.39..8.43 rows=2 width=202) (actual time=0.079..0.084 rows=35.00 loops=1)
+  Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+  Sort Key: e.z_index, e.element_id
+  Presorted Key: e.z_index
+  Full-sort Groups: 2  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+  Buffers: shared hit=11
+  ->  Index Scan using idx_elements_z_index on public.canvas_elements e  (cost=0.14..8.38 rows=1 width=202) (actual time=0.008..0.067 rows=35.00 loops=1)
+        Output: e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.scale_x, e.scale_y, e.rotation, e.stroke_width, e.z_index
+        Index Cond: ((e.project_id)::text = 'proj_001'::text)
+        Filter: ((((e.pos_x)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) <= '1920.00000001'::double precision) AND (((e.pos_x)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision) AND (((e.pos_y)::double precision - ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) <= '1080.00000001'::double precision) AND (((e.pos_y)::double precision + ((((((e.width + e.stroke_width) * e.scale_x) / 2.0))::double precision * abs(sin(radians((e.rotation)::double precision)))) + (((((e.height + e.stroke_width) * e.scale_y) / 2.0))::double precision * abs(cos(radians((e.rotation)::double precision)))))) >= '-1e-08'::double precision))
+        Index Searches: 1
+        Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=179
+Planning Time: 0.288 ms
+Execution Time: 0.099 ms
+ROLLBACK
