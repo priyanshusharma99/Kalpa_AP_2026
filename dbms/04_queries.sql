@@ -149,7 +149,7 @@ WHERE project_id = 'proj_001';
 SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height,
        e.fill_color, e.stroke_color, e.z_index, u.user_name AS creator_name
 FROM canvas_elements e
-JOIN users u ON e.creator_id = u.user_id
+LEFT JOIN users u ON e.creator_id = u.user_id
 WHERE e.project_id = 'proj_001' AND e.shape_type IN ('rect', 'circle', 'triangle')
 ORDER BY e.z_index ASC;
 
@@ -161,7 +161,7 @@ ORDER BY e.z_index ASC;
 -- ============================================================
 SELECT e.element_id, e.shape_type, e.custom_properties, u.user_name AS creator_name
 FROM canvas_elements e
-JOIN users u ON e.creator_id = u.user_id
+LEFT JOIN users u ON e.creator_id = u.user_id
 WHERE e.project_id = 'proj_001'
   AND e.custom_properties @> '{"isLocked": true}'::jsonb;
 
@@ -239,32 +239,50 @@ ORDER BY total_elements DESC;
 
 -- ============================================================
 -- R18: READ
--- Audit trail — recent canvas modifications and editor details
--- Scenario: Activity log side panel displaying the 20 most recent
--- canvas shape additions and modifications with editor metadata.
+-- Recent canvas elements with original creator details
+-- Scenario: Lists the 20 most recently updated elements with their original
+-- creators. This is current state, not an audit history or last-editor log.
 -- ============================================================
 SELECT e.element_id, e.shape_type, e.updated_at,
-       u.user_name AS modifier_name, u.avatar_url
+       u.user_name AS creator_name, u.avatar_url
 FROM canvas_elements e
 LEFT JOIN users u ON e.creator_id = u.user_id
 WHERE e.project_id = 'proj_001'
-ORDER BY e.updated_at DESC
+ORDER BY e.updated_at DESC, e.element_id
 LIMIT 20;
 
 -- ============================================================
 -- A01: ADVANCED READ
--- Spatial Viewport Culling (2D Bounding Box Intersection)
--- Scenario: Viewport rendering culling. Fetches only elements intersecting
--- the active client camera window [view_min_x, view_min_y] to [view_max_x, view_max_y].
+-- Spatial Viewport Culling (transformed axis-aligned bounds)
+-- Scenario: Fetch candidate shapes intersecting viewport [0,0]..[1920,1080].
+-- pos_x/pos_y are the CENTRE; widths/heights are unscaled local bounds.
+-- Rotated/scaled rectangle bounds conservatively enclose paths and circles.
+-- Stroke is included as a centred, scaling stroke. Shadows, skew, groups and
+-- non-scaling strokes require application-normalised bounds; see CP1 contract.
+-- Small floating-point tolerance retains shapes touching viewport edges.
 -- ============================================================
-SELECT e.element_id, e.shape_type, e.pos_x, e.pos_y, e.width, e.height, e.z_index
-FROM canvas_elements e
-WHERE e.project_id = 'proj_001'
-  AND e.pos_x <= 1920.00                    -- viewport_max_x
-  AND (e.pos_x + e.width) >= 0.00           -- viewport_min_x
-  AND e.pos_y <= 1080.00                    -- viewport_max_y
-  AND (e.pos_y + e.height) >= 0.00          -- viewport_min_y
-ORDER BY e.z_index ASC;
+WITH transformed_bounds AS (
+    SELECT e.*,
+           ABS(COS(RADIANS(e.rotation::double precision))) AS abs_cos,
+           ABS(SIN(RADIANS(e.rotation::double precision))) AS abs_sin,
+           (e.width + e.stroke_width) * e.scale_x / 2.0 AS half_width,
+           (e.height + e.stroke_width) * e.scale_y / 2.0 AS half_height
+    FROM canvas_elements e
+    WHERE e.project_id = 'proj_001'
+), bounds AS (
+    SELECT t.*,
+           half_width * abs_cos + half_height * abs_sin AS extent_x,
+           half_width * abs_sin + half_height * abs_cos AS extent_y
+    FROM transformed_bounds t
+)
+SELECT element_id, shape_type, pos_x, pos_y, width, height,
+       scale_x, scale_y, rotation, stroke_width, z_index
+FROM bounds
+WHERE pos_x - extent_x <= 1920.00 + 1e-8
+  AND pos_x + extent_x >= 0.00 - 1e-8
+  AND pos_y - extent_y <= 1080.00 + 1e-8
+  AND pos_y + extent_y >= 0.00 - 1e-8
+ORDER BY z_index ASC, element_id;
 
 -- ============================================================
 -- A02: ADVANCED READ
@@ -339,7 +357,7 @@ SELECT
         '[]'::json
     ) AS replies_json
 FROM comment_pins cp
-JOIN users u ON cp.creator_id = u.user_id
+LEFT JOIN users u ON cp.creator_id = u.user_id
 LEFT JOIN comment_replies cr ON cp.comment_id = cr.comment_id
 LEFT JOIN users ru ON cr.author_id = ru.user_id
 WHERE cp.project_id = 'proj_001'
@@ -436,24 +454,40 @@ WHERE comment_id = 'comm_001' AND project_id = 'proj_001';
 -- ============================================================
 -- W09: WRITE
 -- Real-time Liveblocks Debounce Upsert
--- Scenario: Handles both creation and edits in a single idempotent statement.
+-- Scenario: Persists a complete element snapshot, including content and style.
+-- Omitted nullable content is cleared. creator_id/created_at remain immutable.
+-- Reapplying a snapshot preserves visual state; updated_at records the flush.
 -- ============================================================
 INSERT INTO canvas_elements (
     element_id, project_id, shape_type, pos_x, pos_y, width, height,
     scale_x, scale_y, rotation, opacity, fill_color, stroke_color,
-    stroke_width, z_index, custom_properties, creator_id
+    stroke_width, z_index, text_content, image_url, custom_properties, creator_id
 ) VALUES (
     'elem_upsert_01', 'proj_001', 'rect', 400.00, 200.00, 150.00, 100.00,
     1.00, 1.00, 0.00, 1.00, '#6366F1', '#4F46E5',
-    1.50, 15, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
+    1.50, 15, NULL, NULL, '{"borderRadius": "4px"}'::jsonb, 'usr_001'
 )
 ON CONFLICT (element_id) DO UPDATE SET
+    shape_type = EXCLUDED.shape_type,
     pos_x = EXCLUDED.pos_x,
     pos_y = EXCLUDED.pos_y,
     width = EXCLUDED.width,
     height = EXCLUDED.height,
+    scale_x = EXCLUDED.scale_x,
+    scale_y = EXCLUDED.scale_y,
+    rotation = EXCLUDED.rotation,
+    opacity = EXCLUDED.opacity,
     fill_color = EXCLUDED.fill_color,
-    updated_at = CURRENT_TIMESTAMP;
+    stroke_color = EXCLUDED.stroke_color,
+    stroke_width = EXCLUDED.stroke_width,
+    z_index = EXCLUDED.z_index,
+    text_content = EXCLUDED.text_content,
+    image_url = EXCLUDED.image_url,
+    custom_properties = EXCLUDED.custom_properties,
+    updated_at = CURRENT_TIMESTAMP
+-- IDs are global. A collision from another project must not alter its element.
+-- A zero-row result must be treated by the application as a rejected collision.
+WHERE canvas_elements.project_id = EXCLUDED.project_id;
 
 -- ============================================================
 -- W10: WRITE
@@ -471,7 +505,7 @@ COMMIT;
 -- ============================================================
 -- BENCHMARKING GUIDE (CP4 EXECUTION PLANS)
 -- ============================================================
--- All queries above (R01..R18 and W01..W08) correspond directly
+-- All 32 queries above (R01..R18, A01..A04, W01..W10) correspond directly
 -- to the execution plan analyses located in dbms/plans/ and summarized
 -- in dbms/05_query_timings.md.
 --

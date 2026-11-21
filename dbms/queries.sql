@@ -4,4 +4,4 @@
 -- Author: Priyanshu Sharma (Lead, Team T0013 - Kalpa)
 -- ============================================================
 
-\i dbms/04_queries.sql
+\ir 04_queries.sql
